@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientPlugin", "ClientPlugin\ClientPlugin.csproj", "{A77D81C6-222D-4D5E-8DB1-4DD23A5C6E3B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerPlugin", "ServerPlugin\ServerPlugin.csproj", "{DFD11392-BB9E-440B-97B9-F4BF4089085C}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared", "Shared\Shared.shproj", "{48957F8C-3ED7-40A3-B682-2575CD735833}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{75919FCB-E258-4690-ABD5-44597B3D9D65}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+		AGENTS.md = AGENTS.md
+		Directory.Build.props = Directory.Build.props
+		BugfixesClient.xml = BugfixesClient.xml
+		BugfixesServer.xml = BugfixesServer.xml
+		LICENSE = LICENSE
+		Version.Build.props = Version.Build.props
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A77D81C6-222D-4D5E-8DB1-4DD23A5C6E3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A77D81C6-222D-4D5E-8DB1-4DD23A5C6E3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A77D81C6-222D-4D5E-8DB1-4DD23A5C6E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A77D81C6-222D-4D5E-8DB1-4DD23A5C6E3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A77D81C6-222D-4D5E-8DB1-4DD23A5C6E3B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{A77D81C6-222D-4D5E-8DB1-4DD23A5C6E3B}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{DFD11392-BB9E-440B-97B9-F4BF4089085C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFD11392-BB9E-440B-97B9-F4BF4089085C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFD11392-BB9E-440B-97B9-F4BF4089085C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFD11392-BB9E-440B-97B9-F4BF4089085C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFD11392-BB9E-440B-97B9-F4BF4089085C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{DFD11392-BB9E-440B-97B9-F4BF4089085C}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
