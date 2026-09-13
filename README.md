@@ -21,6 +21,7 @@ Fixes long standing bugs may never be fixed in the vanilla game.
 List the bugs fixed with the relevant PR links without further details.
 
 - Server-absolute mod model paths in the vicinity asset preload ([#1](https://github.com/CometWorks/bugfixes/pull/1))
+- Havok rigid bodies and phantoms released while their world still holds them ([#2](https://github.com/CometWorks/bugfixes/pull/2))
 
 ## Legal
 
