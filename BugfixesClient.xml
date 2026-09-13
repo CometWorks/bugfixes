@@ -11,6 +11,7 @@
     <Description>
         Bugs fixed:
         - #1: Server-absolute mod model paths in the vicinity asset preload
+        - #3: The HUD energy-time stat dereferencing a resource distributor the controlled grid does not have
     </Description>
 
     <SourceDirectories>
