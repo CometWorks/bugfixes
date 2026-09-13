@@ -21,6 +21,7 @@ Fixes long standing bugs may never be fixed in the vanilla game.
 List the bugs fixed with the relevant PR links without further details.
 
 - Server-absolute mod model paths in the vicinity asset preload ([#1](https://github.com/CometWorks/bugfixes/pull/1))
+- The HUD energy-time stat dereferencing a resource distributor the controlled grid does not have ([#3](https://github.com/CometWorks/bugfixes/pull/3))
 
 ## Legal
 
