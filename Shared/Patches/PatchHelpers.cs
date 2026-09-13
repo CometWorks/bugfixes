@@ -52,6 +52,10 @@ public static class PatchHelpers
             return false;
         }
 
+        // Patches applied on their own, so that a failing target cannot abort PatchAll
+        // and disable every other fix in this plugin. They never throw.
+        HavokWorldObjectDisposeGuard.Apply(harmony, log);
+
         return true;
     }
 
