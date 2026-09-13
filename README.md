@@ -21,7 +21,7 @@ Fixes long standing bugs Keen never fixes and most likely never will. If you rea
 
 List the bugs fixed with the relevant PR links without further details.
 
-- TODO
+- Server-absolute mod model paths in the vicinity asset preload ([#1](https://github.com/CometWorks/bugfixes/pull/1))
 
 ## Legal
 
