@@ -85,7 +85,9 @@ public static class HavokEndOfStepCallbackPatch
 
     private static readonly object Sync = new();
     private static readonly List<Pending> Queue = new();
-    [ThreadStatic] private static int stepDepth;
+
+    [ThreadStatic]
+    private static int stepDepth;
 
     private static int state; // 0 unverified, 1 verified, -1 disabled
     private static IntPtr listenerVtable;
@@ -101,10 +103,18 @@ public static class HavokEndOfStepCallbackPatch
 
     // ---- Harmony targets ----
 
-    [HarmonyPatch(typeof(HkEntity), nameof(HkEntity.ContactPointCallbackEnabled), MethodType.Setter)]
+    [HarmonyPatch(
+        typeof(HkEntity),
+        nameof(HkEntity.ContactPointCallbackEnabled),
+        MethodType.Setter
+    )]
     [HarmonyPrefix]
-    private static void BeforeContactPointCallbackEnabledSet(HkEntity __instance, bool value,
-        bool ___m_contactListenerEnabled, HkContactListener ___m_contactListener)
+    private static void BeforeContactPointCallbackEnabledSet(
+        HkEntity __instance,
+        bool value,
+        bool ___m_contactListenerEnabled,
+        HkContactListener ___m_contactListener
+    )
     {
         if (value || !___m_contactListenerEnabled)
             return;
@@ -114,8 +124,11 @@ public static class HavokEndOfStepCallbackPatch
 
     [HarmonyPatch(typeof(HkEntity), "Dispose", typeof(bool))]
     [HarmonyPrefix]
-    private static void BeforeEntityDispose(HkEntity __instance, bool ___m_contactListenerEnabled,
-        HkContactListener ___m_contactListener)
+    private static void BeforeEntityDispose(
+        HkEntity __instance,
+        bool ___m_contactListenerEnabled,
+        HkContactListener ___m_contactListener
+    )
     {
         if (!___m_contactListenerEnabled)
             return;
@@ -171,7 +184,13 @@ public static class HavokEndOfStepCallbackPatch
 
     private static void OnDetach(HkEntity entity, HkContactListener listener)
     {
-        if (!Enabled || entity == null || listener == null || entity.IsDisposed || listener.IsDisposed)
+        if (
+            !Enabled
+            || entity == null
+            || listener == null
+            || entity.IsDisposed
+            || listener.IsDisposed
+        )
             return;
 
         try
@@ -189,7 +208,8 @@ public static class HavokEndOfStepCallbackPatch
             if (world == IntPtr.Zero)
                 return; // out of the world: no agents, nothing can be registered
 
-            var onMainThread = MyUtils.MainThread == null || Thread.CurrentThread == MyUtils.MainThread;
+            var onMainThread =
+                MyUtils.MainThread == null || Thread.CurrentThread == MyUtils.MainThread;
             if (onMainThread && stepDepth == 0)
             {
                 Purge(world, native, records);
@@ -197,7 +217,14 @@ public static class HavokEndOfStepCallbackPatch
             }
 
             lock (Sync)
-                Queue.Add(new Pending { World = world, Listener = native, Records = records });
+                Queue.Add(
+                    new Pending
+                    {
+                        World = world,
+                        Listener = native,
+                        Records = records,
+                    }
+                );
             Interlocked.Increment(ref Deferred);
         }
         catch (Exception e)
@@ -276,7 +303,12 @@ public static class HavokEndOfStepCallbackPatch
         foreach (var record in records)
         {
             dropped += RemoveEntries(util + UtilCollisions, CollisionEntrySize, record, listener);
-            dropped += RemoveEntries(util + UtilNewCollisions, NewCollisionEntrySize, record, listener);
+            dropped += RemoveEntries(
+                util + UtilNewCollisions,
+                NewCollisionEntrySize,
+                record,
+                listener
+            );
         }
 
         Interlocked.Increment(ref Detaches);
@@ -284,12 +316,21 @@ public static class HavokEndOfStepCallbackPatch
             return;
 
         Interlocked.Add(ref Dropped, dropped);
-        Common.Logger.Debug("Havok end-of-step callbacks: dropped {0} registration(s) of detached listener {1:X} (total {2})",
-            dropped, listener.ToInt64(), Dropped);
+        Common.Logger.Debug(
+            "Havok end-of-step callbacks: dropped {0} registration(s) of detached listener {1:X} (total {2})",
+            dropped,
+            listener.ToInt64(),
+            Dropped
+        );
     }
 
     // Removes every { mgr, listener, source } match from an hkArray of entries, keeping the order.
-    private static unsafe long RemoveEntries(IntPtr array, int entrySize, Registration record, IntPtr listener)
+    private static unsafe long RemoveEntries(
+        IntPtr array,
+        int entrySize,
+        Registration record,
+        IntPtr listener
+    )
     {
         var data = *(byte**)array;
         var count = *(int*)(array + 8);
@@ -300,8 +341,10 @@ public static class HavokEndOfStepCallbackPatch
         for (var i = 0; i < count; i++)
         {
             var entry = data + i * entrySize;
-            var matches = *(IntPtr*)entry == record.Manager && *(IntPtr*)(entry + 8) == listener &&
-                          *(int*)(entry + 16) == record.Source;
+            var matches =
+                *(IntPtr*)entry == record.Manager
+                && *(IntPtr*)(entry + 8) == listener
+                && *(int*)(entry + 16) == record.Source;
             if (matches)
                 continue;
 
@@ -321,7 +364,10 @@ public static class HavokEndOfStepCallbackPatch
         for (var i = 0; i < count; i++)
         {
             var extension = extensions[i];
-            if (extension == IntPtr.Zero || *(int*)(extension + ExtensionId) != EndOfStepExtensionId)
+            if (
+                extension == IntPtr.Zero
+                || *(int*)(extension + ExtensionId) != EndOfStepExtensionId
+            )
                 continue;
 
             var util = extension + ExtensionUtil;
@@ -352,7 +398,8 @@ public static class HavokEndOfStepCallbackPatch
         var extVtable = *(IntPtr*)extension;
         var utilVt = *(IntPtr*)(util + UtilPostSimulationVtable);
         if (state > 0)
-            return extVtable == extensionVtable && utilVt == utilVtable || Fail("the end-of-step util changed class");
+            return extVtable == extensionVtable && utilVt == utilVtable
+                || Fail("the end-of-step util changed class");
 
         if (RttiName(extVtable) != ExtensionClass)
             return Fail("world extension 1001 is not hkpCollisionCallbackUtil");
