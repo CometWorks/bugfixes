@@ -10,7 +10,7 @@
 
     <Description>
         Bugs fixed:
-        - TODO
+        - Crash in Havok's end-of-step contact callbacks after a contact listener is detached (doors vs missiles)
     </Description>
 
     <SourceDirectories>
