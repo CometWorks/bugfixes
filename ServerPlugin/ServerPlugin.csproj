@@ -5,6 +5,7 @@
     <RootNamespace>ServerPlugin</RootNamespace>
     <AssemblyName>Bugfixes</AssemblyName>
     <LangVersion>14</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- Target platforms on Windows and Linux -->
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net48;net10.0</TargetFrameworks>
@@ -342,31 +343,21 @@
   </Target>
 
   <!-- Copies the build output into Magnetar's Local plugin folder, which lives in
-       Magnetar's config folder:
-         Linux:   $XDG_CONFIG_HOME/Magnetar        (~/.config/Magnetar)
-         Windows: <Magnetar>\MagnetarLegacy        for the net4x build
-                  <Magnetar>\MagnetarInterim       for the net5+ build
+       Magnetar's config folder, <Magnetar>/Magnetar unless MagnetarData says otherwise.
+       Both launchers share that folder, so the net4x and the net5+ builds of this
+       plugin would overwrite each other there; on Windows the net5+ build wins.
        Magnetar scans Local recursively for assemblies and identifies each plugin by
        its DLL file name, so the plugin is deployed flat, with the MagnetarHub
        registration XML next to it as <AssemblyName>.dll.xml. -->
   <Target Name="DeployPlugin" AfterTargets="Build"
-          Condition="'$(RunPostBuildEvent)' != 'Never' And '$(TargetFramework)' != ''">
-    <!-- On Windows the config folder is named after the launcher and sits next to
-         it. Magnetar falls back to the Legacy folder when the launcher has none of
-         its own, and so does the deployment, unless a .NET Framework build of this
-         same plugin is claiming that folder already. -->
-    <PropertyGroup Condition="'$(MagnetarData)' == '' And '$(Magnetar)' != '' And $([MSBuild]::IsOSPlatform('Windows'))">
-      <MagnetarData Condition="Exists('$(Magnetar)\$(MagnetarLauncher)')">$(Magnetar)\$(MagnetarLauncher)</MagnetarData>
-      <MagnetarData Condition="'$(MagnetarData)' == '' And '$(TargetFrameworks)' == ''">$(Magnetar)\MagnetarLegacy</MagnetarData>
-    </PropertyGroup>
-
+          Condition="'$(RunPostBuildEvent)' != 'Never' And '$(TargetFramework)' != '' And ('$(TargetFrameworks)' == '' Or !$(TargetFramework.StartsWith('net4')))">
     <PropertyGroup>
       <PluginDirectory Condition="'$(MagnetarData)' != '' And Exists('$(MagnetarData)')">$(MagnetarData)$(PathSeparator)Local</PluginDirectory>
       <PluginDataFile>$(RepoRoot)$(AssemblyName)Server.xml</PluginDataFile>
     </PropertyGroup>
 
     <Warning Condition="'$(PluginDirectory)' == ''"
-             Text="No Magnetar config folder for the $(TargetFramework) build under &quot;$(Magnetar)&quot;, skipping its deployment." />
+             Text="Magnetar config folder &quot;$(MagnetarData)&quot; does not exist, skipping the deployment of the $(TargetFramework) server build." />
 
     <MakeDir Condition="'$(PluginDirectory)' != ''" Directories="$(PluginDirectory)" />
     <Copy Condition="'$(PluginDirectory)' != ''"

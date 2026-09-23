@@ -15,7 +15,7 @@
     <Magnetar></Magnetar>
 
     <!-- Magnetar config folder the server plugin is deployed into, the one holding
-         Local, Sources and Profiles (empty = auto-detect) -->
+         Local, Sources and Profiles (empty = the Magnetar subfolder of the folder above) -->
     <MagnetarData></MagnetarData>
   </PropertyGroup>
 
@@ -57,13 +57,10 @@
     <Pulsar Condition="'$(Pulsar)' == '' and '$(XDG_CONFIG_HOME)' != ''">$(XDG_CONFIG_HOME)/Pulsar</Pulsar>
     <Pulsar Condition="'$(Pulsar)' == ''">$(HOME)/.config/Pulsar</Pulsar>
 
-    <!-- Magnetar installs into $XDG_DATA_HOME/Magnetar, but keeps its config,
-         Local plugins, sources and profiles under $XDG_CONFIG_HOME/Magnetar. -->
-    <Magnetar Condition="'$(Magnetar)' == '' and '$(XDG_DATA_HOME)' != ''">$(XDG_DATA_HOME)/Magnetar</Magnetar>
-    <Magnetar Condition="'$(Magnetar)' == ''">$(HOME)/.local/share/Magnetar</Magnetar>
-
-    <MagnetarData Condition="'$(MagnetarData)' == '' and '$(XDG_CONFIG_HOME)' != ''">$(XDG_CONFIG_HOME)/Magnetar</MagnetarData>
-    <MagnetarData Condition="'$(MagnetarData)' == ''">$(HOME)/.config/Magnetar</MagnetarData>
+    <!-- Magnetar is portable and lives in one folder, $XDG_CONFIG_HOME/Magnetar by
+         default; its config folder is the Magnetar subfolder of it, see below. -->
+    <Magnetar Condition="'$(Magnetar)' == '' and '$(XDG_CONFIG_HOME)' != ''">$(XDG_CONFIG_HOME)/Magnetar</Magnetar>
+    <Magnetar Condition="'$(Magnetar)' == ''">$(HOME)/.config/Magnetar</Magnetar>
   </PropertyGroup>
 
   <!-- Locate the Steam library folder holding each app, so non-default libraries work too -->
@@ -105,11 +102,23 @@
     <MagnetarLauncher Condition="'$(MagnetarLauncher)' == ''">MagnetarInterim</MagnetarLauncher>
   </PropertyGroup>
 
-  <!-- Folder holding PluginSdk.dll, referenced by the ServerPlugin project.
-       Linux ships the single Interim launcher from a flat Bin folder. -->
-  <PropertyGroup Condition="'$(MagnetarBin)' == '' and '$(Magnetar)' != ''">
-    <MagnetarBin Condition="!$([MSBuild]::IsOSPlatform('Windows'))">$(Magnetar)/Bin</MagnetarBin>
-    <MagnetarBin Condition="$([MSBuild]::IsOSPlatform('Windows')) and '$(MagnetarLauncher)' != ''">$(Magnetar)\Libraries\$(MagnetarLauncher)</MagnetarBin>
+  <!-- A single-target project sets its TargetFramework only after this file is
+       imported; Linux builds are always single-target and always MagnetarInterim. -->
+  <PropertyGroup Condition="'$(MagnetarLauncher)' == '' and !$([MSBuild]::IsOSPlatform('Windows'))">
+    <MagnetarLauncher>MagnetarInterim</MagnetarLauncher>
+  </PropertyGroup>
+
+  <!-- Folder holding PluginSdk.dll, referenced by the ServerPlugin project: each
+       launcher has its own Libraries subfolder, Linux ships only MagnetarInterim. -->
+  <PropertyGroup Condition="'$(MagnetarBin)' == '' and '$(Magnetar)' != '' and '$(MagnetarLauncher)' != ''">
+    <MagnetarBin>$(Magnetar)$(PathSeparator)Libraries$(PathSeparator)$(MagnetarLauncher)</MagnetarBin>
+  </PropertyGroup>
+
+  <!-- Magnetar's config folder, the counterpart of Pulsar's Legacy folder: it holds
+       Local, Sources, Profiles and the DevFolder, is shared by both launchers and sits
+       next to them unless the launcher runs with -useHome or -config. -->
+  <PropertyGroup Condition="'$(MagnetarData)' == '' and '$(Magnetar)' != ''">
+    <MagnetarData>$(Magnetar)$(PathSeparator)Magnetar</MagnetarData>
   </PropertyGroup>
 
   <!-- Reference folders with a trailing directory separator, for use in HintPath -->
