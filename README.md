@@ -1,6 +1,6 @@
 # Bugfixes for Space Engineers
 
-Fixes long standing bugs may never be fixed in the vanilla game.
+Fixes long-standing bugs may never be fixed in the vanilla game.
 
 ## Scope
 - This plugin contains only bugfixes and does not add any new features.

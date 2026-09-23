@@ -6,12 +6,8 @@
     <FriendlyName>Bugfixes</FriendlyName>
     <Author>CometWorks</Author>
 
-    <Tooltip>Fixes long standing bugs may never be fixed in the vanilla Dedicated Server.</Tooltip>
-
-    <Description>
-        Bugs fixed:
-        - Crash in Havok's end-of-step contact callbacks after a contact listener is detached (doors vs missiles)
-    </Description>
+    <Tooltip>Fixes long-standing bugs may never be fixed in the vanilla Dedicated Server</Tooltip>
+    <Description>See the README on GitHub</Description>
 
     <SourceDirectories>
         <Directory>ServerPlugin</Directory>
