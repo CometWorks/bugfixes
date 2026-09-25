@@ -72,15 +72,25 @@ Info: Bugfixes: Vicinity preload: of 21 model paths sent by the server,
 and `VRageRender-DirectX11.log` contains no `Mesh asset … missing` line at
 all, against three in the same place before.
 
-The separator handling was checked on the Linux client with a single-player
-world whose saved vicinity cache holds
+The separator handling was checked with a single-player world that holds
+four blocks of a workshop mod (Rotary Airlock, 1359954841) near the spawn
+point. Its saved vicinity cache lists
 `G:\Space\Instance\content\244850\1359954841\Models\Cubes\RotaryAirlockTB.mwm`
-(a workshop mod the world loads) and the same path under a mod id the world
-doesn't have. A single-player load preloads that cache the same way a join
-does. The plugin logged `remapped 1 ... and dropped 1`, and the render model
-factory entry was exactly the string of the client's own block definition.
-Without the plugin, the factory held the server path with the drive letter
-stripped.
+and the same path under a mod id the world doesn't have. A single-player load
+preloads that cache the same way a join does. Every run logged
+`remapped 1 ... and dropped 1`. After 60 seconds:
 
-Not yet checked on a Windows client, where the verbatim `.sbc` spelling is
-what makes the preloaded entry the one the placed block uses.
+| Client | Build | Factory entries for the model | Blocks stuck on the loading dummy |
+|---|---|---|---|
+| Windows (Proton, Wine Mono) | before this fix | two: the preload's `Z:/…` and the block's `Z:\…` | 0 of 4 |
+| Windows (Proton, Wine Mono) | this fix | one, the block's own string | 0 of 4 |
+| Linux, linux-compat 1.0.20 | this fix | one, the block's own string | 0 of 4 |
+| Linux, linux-compat 1.0.20 | backslashes kept on Linux | one, a different spelling | 4 of 4 |
+| Linux, linux-compat 1.0.21 | this fix | one | 0 of 4 |
+| Linux, linux-compat 1.0.21 | backslashes kept on Linux | one | 0 of 4 |
+
+So on Windows the preload now shares its entry with the block instead of
+loading a copy nobody uses. On Linux, keeping the server's backslashes would
+leave the mod blocks invisible with linux-compat 1.0.20; from 1.0.21 either
+spelling works. Not yet tested on a native Windows install or against a real
+server.
