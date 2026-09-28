@@ -32,6 +32,7 @@ None yet.
 ### Client + Server
 
 - [Crash in Havok's end-of-step contact callbacks after a listener is detached](Docs/havok-end-of-step-callbacks.md)
+- [Closed voxel maps kept alive by the voxel loading wait set](Docs/voxel-clipmap-wait-set.md)
 
 ## Legal
 
