@@ -45,7 +45,24 @@ gets a new clipmap from `AddRenderObjects`, which goes into the set again.
 
 ## Testing
 
-Pending: a clustered dedicated server with the same postfix (cluster plugin
-backstop, which logs the set's count every 5 minutes) must show the count
-tracking the live voxel maps, with a before/after heap comparison. The
-results will be added here before this PR leaves draft.
+On a clustered dedicated server (5 nodes, 1.210, 2026-09-29) running the same postfix in the
+cluster plugin, which logs the set's count next to the number of live voxel maps every 5 minutes.
+Nodes restart about every hour, so each process below had about an hour of uptime or more:
+
+| Node | Set count | Live voxel maps | Removed by the postfix |
+|---|---|---|---|
+| node-1 | 1478 | 1478 | 3763 |
+| node-2 | 1553 | 1553 | 7243 |
+| node-3 | 1521 | 1521 | 10146 |
+| node-4 | 6 | 6 | 0 (idle node) |
+| node-5 | 1720 | 1720 | 15 |
+
+The count equals the live voxel-map count at every sample. On node-3 it moved between 1521 and 1947
+over two hours while the postfix removed 10,146 clipmaps of closed voxel maps. Without the fix the set
+kept every voxel map the process had created: the two heap dumps before the fix showed 6,957, then
+11,031, equal to the MyVoxelMap count. Every removed entry is a closed voxel map, with its mesher and
+clipmap cell structure, that is now collectable.
+
+There is no after-fix heap dump. The count line above measures the set directly. The server's managed
+heap growth fell by about a third with this fix alone. The rest came from a separate retention caused
+by the cluster, not by the game.
