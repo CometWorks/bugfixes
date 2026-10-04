@@ -18,7 +18,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 
-    <!-- Keep original behaviour for post/pre build events -->
+    <!-- Keep original behavior for post/pre build events -->
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
 
@@ -343,7 +343,7 @@
   </Target>
 
   <!-- Copies the build output into Magnetar's Local plugin folder, which lives in
-       Magnetar's config folder, <Magnetar>/Magnetar unless MagnetarData says otherwise.
+       Magnetar's config folder, but only if MagnetarData is set (see Directory.Build.props).
        Both launchers share that folder, so the net4x and the net5+ builds of this
        plugin would overwrite each other there; on Windows the net5+ build wins.
        Magnetar scans Local recursively for assemblies and identifies each plugin by
@@ -356,7 +356,9 @@
       <PluginDataFile>$(RepoRoot)$(AssemblyName)Server.xml</PluginDataFile>
     </PropertyGroup>
 
-    <Warning Condition="'$(PluginDirectory)' == ''"
+    <Message Condition="'$(MagnetarData)' == ''"
+             Text="MagnetarData is not set, the $(TargetFramework) server build will not be deployed." />
+    <Warning Condition="'$(MagnetarData)' != '' And '$(PluginDirectory)' == ''"
              Text="Magnetar config folder &quot;$(MagnetarData)&quot; does not exist, skipping the deployment of the $(TargetFramework) server build." />
 
     <MakeDir Condition="'$(PluginDirectory)' != ''" Directories="$(PluginDirectory)" />
