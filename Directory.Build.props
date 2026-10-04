@@ -7,15 +7,17 @@
     <!-- Folder containing SpaceEngineersDedicated.exe (empty = auto-detect from Steam) -->
     <Dedicated64></Dedicated64>
 
-    <!-- Pulsar plugin loader folder the client plugin is deployed into (empty = auto-detect) -->
+    <!-- Pulsar folder to deploy the client plugin into after each build (empty = no deployment),
+         for example $(APPDATA)\Pulsar on Windows or $(HOME)/.config/Pulsar on Linux -->
     <Pulsar></Pulsar>
 
     <!-- Magnetar plugin loader installation folder, the one holding the launcher
          executables and their Libraries (empty = auto-detect) -->
     <Magnetar></Magnetar>
 
-    <!-- Magnetar config folder the server plugin is deployed into, the one holding
-         Local, Sources and Profiles (empty = the Magnetar subfolder of the folder above) -->
+    <!-- Magnetar config folder to deploy the server plugin into after each build, the one
+         holding Local, Sources and Profiles, usually the Magnetar subfolder of the folder
+         above (empty = no deployment) -->
     <MagnetarData></MagnetarData>
   </PropertyGroup>
 
@@ -45,17 +47,12 @@
          for tool apps like the Dedicated Server (298740). -->
     <SteamGameDir Condition="'$(SteamGameDir)' == ''">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 244850@InstallLocation)</SteamGameDir>
     <SteamServerDir Condition="'$(SteamServerDir)' == ''">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 298740@InstallLocation)</SteamServerDir>
-
-    <Pulsar Condition="'$(Pulsar)' == '' and '$(APPDATA)' != ''">$(APPDATA)\Pulsar</Pulsar>
   </PropertyGroup>
 
   <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('Windows')) and '$(HOME)' != ''">
     <SteamPath Condition="'$(SteamPath)' == '' and Exists('$(HOME)/.steam/steam/steamapps')">$(HOME)/.steam/steam</SteamPath>
     <SteamPath Condition="'$(SteamPath)' == '' and Exists('$(HOME)/.local/share/Steam/steamapps')">$(HOME)/.local/share/Steam</SteamPath>
     <SteamPath Condition="'$(SteamPath)' == '' and Exists('$(HOME)/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps')">$(HOME)/.var/app/com.valvesoftware.Steam/.local/share/Steam</SteamPath>
-
-    <Pulsar Condition="'$(Pulsar)' == '' and '$(XDG_CONFIG_HOME)' != ''">$(XDG_CONFIG_HOME)/Pulsar</Pulsar>
-    <Pulsar Condition="'$(Pulsar)' == ''">$(HOME)/.config/Pulsar</Pulsar>
 
     <!-- Magnetar is portable and lives in one folder, $XDG_CONFIG_HOME/Magnetar by
          default; its config folder is the Magnetar subfolder of it, see below. -->
@@ -112,13 +109,6 @@
        launcher has its own Libraries subfolder, Linux ships only MagnetarInterim. -->
   <PropertyGroup Condition="'$(MagnetarBin)' == '' and '$(Magnetar)' != '' and '$(MagnetarLauncher)' != ''">
     <MagnetarBin>$(Magnetar)$(PathSeparator)Libraries$(PathSeparator)$(MagnetarLauncher)</MagnetarBin>
-  </PropertyGroup>
-
-  <!-- Magnetar's config folder, the counterpart of Pulsar's Legacy folder: it holds
-       Local, Sources, Profiles and the DevFolder, is shared by both launchers and sits
-       next to them unless the launcher runs with -useHome or -config. -->
-  <PropertyGroup Condition="'$(MagnetarData)' == '' and '$(Magnetar)' != ''">
-    <MagnetarData>$(Magnetar)$(PathSeparator)Magnetar</MagnetarData>
   </PropertyGroup>
 
   <!-- Reference folders with a trailing directory separator, for use in HintPath -->

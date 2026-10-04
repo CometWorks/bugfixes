@@ -44,13 +44,15 @@ USER_PROPS_TEMPLATE = """\
     <!-- Folder containing SpaceEngineersDedicated.exe (empty = auto-detect from Steam) -->
     <Dedicated64>{dedicated64}</Dedicated64>
 
-    <!-- Pulsar plugin loader folder used for automatic deployment (empty = auto-detect) -->
+    <!-- Pulsar folder to deploy the client plugin into after each build (empty = no deployment),
+         for example $(APPDATA)\\Pulsar on Windows or $(HOME)/.config/Pulsar on Linux -->
     <Pulsar></Pulsar>
 
     <!-- Magnetar installation folder, holds the launchers (empty = auto-detect) -->
     <Magnetar></Magnetar>
 
-    <!-- Magnetar config folder used for automatic deployment (empty = auto-detect) -->
+    <!-- Magnetar config folder to deploy the server plugin into after each build,
+         usually the Magnetar subfolder of the folder above (empty = no deployment) -->
     <MagnetarData></MagnetarData>
   </PropertyGroup>
 </Project>
