@@ -36,6 +36,9 @@ namespace Shared.Patches;
 // Layout facts (SE1 Havok.dll, 64-bit) come from the crash core and the disassembly, and
 // are verified at run time through MSVC RTTI before anything is written: the fix disables
 // itself with one warning when the classes behind the pointers are not the expected ones.
+// The class-level attribute is required: PatchAll skips classes without one, even when
+// every method names its own target.
+[HarmonyPatch]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class HavokEndOfStepCallbackPatch
