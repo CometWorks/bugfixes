@@ -44,7 +44,14 @@ A prefix on `MySession.PreloadVicinityCache` rewrites `models` and
 
 - A path segment naming a mod in `MySession.Static.Mods` by `PublishedFileId`
   is replaced, together with everything above it, by this client's own folder
-  for that mod.
+  for that mod, as `ModItem.GetPath()` returns it.
+- The part below the mod folder must match the client's own block definition
+  string, since the render model factory keys its entries by that string (only
+  lowercased on Windows). A differently spelled path loads a second copy that
+  no block uses, and the prewarm is lost. On Windows the definition is
+  `Path.Combine(mod folder, <.sbc text>)`, and the server sends the same `.sbc`
+  text, so it is kept verbatim. On Linux, `linux-compat` normalizes definition
+  paths to `/`, so the server's backslashes are turned into `/` there.
 - What cannot be matched that way and is still rooted names a location on
   the sender's own disk, usable only while the sender is this machine, so it
   is kept when it exists locally (hosting) and dropped otherwise. The preload
@@ -64,3 +71,26 @@ Info: Bugfixes: Vicinity preload: of 21 model paths sent by the server,
 
 and `VRageRender-DirectX11.log` contains no `Mesh asset … missing` line at
 all, against three in the same place before.
+
+The separator handling was checked with a single-player world that holds
+four blocks of a workshop mod (Rotary Airlock, 1359954841) near the spawn
+point. Its saved vicinity cache lists
+`G:\Space\Instance\content\244850\1359954841\Models\Cubes\RotaryAirlockTB.mwm`
+and the same path under a mod id the world doesn't have. A single-player load
+preloads that cache the same way a join does. Every run logged
+`remapped 1 ... and dropped 1`. After 60 seconds:
+
+| Client | Build | Factory entries for the model | Blocks stuck on the loading dummy |
+|---|---|---|---|
+| Windows (Proton, Wine Mono) | before this fix | two: the preload's `Z:/…` and the block's `Z:\…` | 0 of 4 |
+| Windows (Proton, Wine Mono) | this fix | one, the block's own string | 0 of 4 |
+| Linux, linux-compat 1.0.20 | this fix | one, the block's own string | 0 of 4 |
+| Linux, linux-compat 1.0.20 | backslashes kept on Linux | one, a different spelling | 4 of 4 |
+| Linux, linux-compat 1.0.21 | this fix | one | 0 of 4 |
+| Linux, linux-compat 1.0.21 | backslashes kept on Linux | one | 0 of 4 |
+
+So on Windows the preload now shares its entry with the block instead of
+loading a copy nobody uses. On Linux, keeping the server's backslashes would
+leave the mod blocks invisible with linux-compat 1.0.20; from 1.0.21 either
+spelling works. Not yet tested on a native Windows install or against a real
+server.
