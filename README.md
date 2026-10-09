@@ -34,6 +34,7 @@ None yet.
 
 - [Crash in Havok's end-of-step contact callbacks after a listener is detached](Docs/havok-end-of-step-callbacks.md)
 - [Closed voxel maps kept alive by the voxel loading wait set](Docs/voxel-clipmap-wait-set.md)
+- [Laser antenna link dropped when someone else repairs the antenna](Docs/laser-antenna-repair-weld.md)
 
 ## Legal
 
