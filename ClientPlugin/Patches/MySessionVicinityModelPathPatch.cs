@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using HarmonyLib;
 using Sandbox.Game.World;
 using Shared.Config;
@@ -91,7 +92,8 @@ public static class MySessionVicinityModelPathPatch
     private static bool TryRemapToLocalMod(
         string path,
         Dictionary<string, string> modFolders,
-        out string remapped)
+        out string remapped
+    )
     {
         remapped = null;
         if (modFolders.Count == 0)
@@ -107,10 +109,18 @@ public static class MySessionVicinityModelPathPatch
             if (end < 0)
                 return false;
 
-            if (IsPublishedFileId(normalized, start, end) &&
-                modFolders.TryGetValue(normalized.Substring(start, end - start), out var folder))
+            if (
+                IsPublishedFileId(normalized, start, end)
+                && modFolders.TryGetValue(normalized.Substring(start, end - start), out var folder)
+            )
             {
-                remapped = folder + normalized.Substring(end);
+                // The render model factory matches the preloaded path against the one in
+                // this client's own block definition, so the result must be spelled the
+                // same way. On Windows that is Path.Combine(mod folder, .sbc text), and
+                // the server sends the .sbc text verbatim below the mod folder. On Linux,
+                // linux-compat normalizes definition paths to '/'.
+                var rest = Path.DirectorySeparatorChar == '/' ? normalized : path;
+                remapped = folder + rest.Substring(end);
                 return true;
             }
 
@@ -144,7 +154,7 @@ public static class MySessionVicinityModelPathPatch
             }
 
             if (!string.IsNullOrEmpty(folder))
-                map[mod.PublishedFileId.ToString()] = folder.Replace('\\', '/').TrimEnd('/');
+                map[mod.PublishedFileId.ToString()] = folder.TrimEnd('\\', '/');
         }
 
         return map;
