@@ -24,6 +24,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 
 - [Server-absolute mod model paths in the vicinity asset preload](Docs/vicinity-model-paths.md)
 - [HUD energy-time stat dereferencing a missing resource distributor](Docs/hud-energy-time-remaining.md)
+- [Laser antenna copy buttons writing GPS strings the paste button rejects](Docs/laser-antenna-copy-coords.md)
 
 ### Server only
 
@@ -33,6 +34,7 @@ None yet.
 
 - [Crash in Havok's end-of-step contact callbacks after a listener is detached](Docs/havok-end-of-step-callbacks.md)
 - [Closed voxel maps kept alive by the voxel loading wait set](Docs/voxel-clipmap-wait-set.md)
+- [Laser antenna link dropped when someone else repairs the antenna](Docs/laser-antenna-repair-weld.md)
 
 ## Legal
 
