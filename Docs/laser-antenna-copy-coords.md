@@ -2,7 +2,7 @@
 
 **Category:** Client only
 **Patch:** `ClientPlugin/Patches/LaserAntennaCopyCoordsPatch.cs`
-**Pull request:** see the README
+**Pull request:** [#9](https://github.com/CometWorks/bugfixes/pull/9)
 
 ## The bug
 

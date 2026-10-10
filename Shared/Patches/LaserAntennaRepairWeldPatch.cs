@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using Sandbox.Game.Entities.Cube;
-using VRage.Game.Entity.EntityComponents;
 using Shared.Plugin;
+using VRage.Game.Entity.EntityComponents;
 
 namespace Shared.Patches;
 

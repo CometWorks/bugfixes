@@ -2,7 +2,7 @@
 
 **Category:** Client + Server
 **Patch:** `Shared/Patches/VoxelClipmapWaitSetPatch.cs`
-**Pull request:** see the README
+**Pull request:** [#6](https://github.com/CometWorks/bugfixes/pull/6)
 
 ## The bug
 
