@@ -2,6 +2,7 @@
 
 **Category:** Client only
 **Patch:** `ClientPlugin/Patches/MeshIndexHashPatch.cs`
+**Pull request:** [#13](https://github.com/CometWorks/bugfixes/pull/13)
 
 ## The bug
 
