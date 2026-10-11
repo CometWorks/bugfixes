@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ClipboardPreviewCreationBlockPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\DebrisEntityIdPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\EmptyStockpilePastePatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\HavokEndOfStepCallbackPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\VoxelClipmapWaitSetPatch.cs" />

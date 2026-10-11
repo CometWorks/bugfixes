@@ -37,6 +37,7 @@ None yet.
 - [Laser antenna link dropped when someone else repairs the antenna](Docs/laser-antenna-repair-weld.md)
 - [Clipboard preview leaving its entity creation block open](Docs/clipboard-preview-creation-block.md)
 - [Debris crashing the game on an entity id that is already taken](Docs/debris-entity-id.md)
+- [Blueprints with an empty construction stockpile fail to paste in a hosted world](Docs/empty-stockpile-paste.md)
 
 ## Legal
 
