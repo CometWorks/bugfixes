@@ -26,6 +26,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 - [HUD energy-time stat dereferencing a missing resource distributor](Docs/hud-energy-time-remaining.md)
 - [Laser antenna copy buttons writing GPS strings the paste button rejects](Docs/laser-antenna-copy-coords.md)
 - [Render thread stalls from constant mesh id hashes](Docs/mesh-index-hash.md)
+- [Blocks of a moving ship drawn one step behind for a frame](Docs/actor-world-matrix-index.md)
 
 ### Server only
 
