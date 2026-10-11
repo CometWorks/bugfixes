@@ -76,7 +76,25 @@ Results are counted over 10 seconds:
 | 8 | 384k / 2.2M | 0 / 0 |
 | 16 | 143k / 819k | 0 / 0 |
 
-In game (Linux, Pulsar Interim, headless client at the high preset with
-shadows, Visitor Ion flown in a straight line from its cockpit), a test
-plugin counted the same two conditions after each frame's prepare jobs had
-finished. See the PR for the numbers.
+In game, the setup was Linux, Pulsar Interim, a headless client at the high
+preset (shadows on, 60 FPS cap) and a pasted 2.5k-block cruiser flown in a
+straight line from its cockpit at 100 m/s. A test plugin counted the same two
+conditions after each frame's prepare jobs had finished: instances ahead of
+their actor, and instances drawn with a dirty matrix at equal versions (the
+stale frame itself). Each run was about 3 minutes, half parked and half
+moving:
+
+| Run | Threads per group | Ahead | Stale draws | Bad frames |
+|---|---|---|---|---|
+| Stock | 8 | 9 | 7 | 3 |
+| Stock, again | 8 | 12 | 8 | 4 |
+| Stock, `DOTNET_PROCESSOR_COUNT=8` | 4 | 3 | 0 | 1 |
+| Prepatched | 8 | 0 | 0 | 0 |
+| Prepatched, again | 8 | 0 | 0 | 0 |
+
+Every event happened while the ship moved. The rewritten `VRage.Render.dll`
+in Pulsar's Preloader folder has the three `Interlocked.Increment` calls in
+`MyActor`.
+
+Not tested: Windows and Pulsar Legacy (.NET Framework). The prepatch uses
+only Cecil and `Interlocked`, the same on both.
