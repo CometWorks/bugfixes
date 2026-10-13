@@ -10,7 +10,7 @@ using VRage.FileSystem;
 
 namespace ClientPlugin.Patches;
 
-// Fixes the vicinity asset preload for modded servers.
+// Fixes the vicinity asset preload for modded servers and moved saves.
 //
 // When a client joins, the server answers its vicinity-cache request with the model
 // paths taken from the server's own MyModel.AssetName values. For vanilla blocks those
@@ -23,6 +23,12 @@ namespace ClientPlugin.Patches;
 // mod folder is the only part that differs. Replacing it with this client's own folder
 // for that mod makes the preload work; what cannot be matched that way is dropped, so
 // the preload becomes a no-op instead of a failed load.
+//
+// A single-player load preloads the cache saved in the world the same way, so this also
+// maps the mod-relative paths MyLocalCacheVicinityModelPathPatch saves, and the absolute
+// paths of older saves made on another machine. An absolute path of another OS is dropped
+// even when it happens to exist here: Proton resolves a Linux path, but then
+// MyResourceUtils.NormalizePath throws UriFormatException on it and crashes the load.
 //
 // Verified on Windows with both the vanilla game and Pulsar: identical failures, so
 // this is a game bug rather than a loader or platform one.
@@ -72,7 +78,7 @@ public static class MySessionVicinityModelPathPatch
 
             // A rooted path names a location on the sender's own disk. It is usable
             // only while the sender is this machine, which is the case when hosting.
-            if (IsRooted(model) && !Exists(model))
+            if (IsRooted(model) && (!Exists(model) || !IsAbsoluteUri(model)))
                 continue;
 
             models[kept++] = model;
@@ -83,7 +89,7 @@ public static class MySessionVicinityModelPathPatch
 
         if (remapped > 0 || dropped > 0)
             Common.Logger.Info(
-                $"Vicinity preload: of {total} model paths sent by the server, remapped {remapped} onto this client's mods and dropped {dropped} as unreachable"
+                $"Vicinity preload: of {total} model paths, remapped {remapped} onto this client's mods and dropped {dropped} as unreachable"
             );
     }
 
@@ -161,7 +167,7 @@ public static class MySessionVicinityModelPathPatch
     }
 
     // Every key is a decimal published file id, so vanilla paths never allocate here.
-    private static bool IsPublishedFileId(string path, int start, int end)
+    internal static bool IsPublishedFileId(string path, int start, int end)
     {
         if (end <= start)
             return false;
@@ -176,9 +182,15 @@ public static class MySessionVicinityModelPathPatch
     }
 
     // Rooted as the sender meant it: an absolute path, or a Windows drive or UNC path.
-    private static bool IsRooted(string path)
+    internal static bool IsRooted(string path)
     {
         return path[0] == '/' || path[0] == '\\' || (path.Length >= 2 && path[1] == ':');
+    }
+
+    // The render thread resolves the texture folder of a rooted model with new Uri(path).
+    private static bool IsAbsoluteUri(string model)
+    {
+        return Uri.TryCreate(model, UriKind.Absolute, out _);
     }
 
     private static bool Exists(string model)

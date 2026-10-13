@@ -1,8 +1,10 @@
-# Server-absolute mod model paths in the vicinity asset preload
+# Absolute mod model paths in the vicinity asset preload
 
 **Category:** Client only
-**Patch:** `ClientPlugin/Patches/MySessionVicinityModelPathPatch.cs`
-**Pull request:** [#1](https://github.com/CometWorks/bugfixes/pull/1)
+**Patches:** `ClientPlugin/Patches/MySessionVicinityModelPathPatch.cs`,
+`ClientPlugin/Patches/MyLocalCacheVicinityModelPathPatch.cs`
+**Pull requests:** [#1](https://github.com/CometWorks/bugfixes/pull/1),
+[#5](https://github.com/CometWorks/bugfixes/pull/5), DIS-0019 (moved saves)
 
 ## The bug
 
@@ -60,6 +62,49 @@ A prefix on `MySession.PreloadVicinityCache` rewrites `models` and
 
 Gated on `Config.Enabled`, like the other patches.
 
+## Moved saves
+
+A single-player world saves the same kind of list. When saving,
+`MySession.GatherVicinityInformation` writes the `MyModel.AssetName` of every
+model near the player into `VicinityModelsCache` and
+`VicinityArmorModelsCache` in `Sandbox.sbc`, and `PrepareBaseSession` hands
+them to `PreloadVicinityCache` on the next load. Mod models are saved as this
+machine's absolute paths:
+
+```
+/home/<user>/.local/share/Steam/steamapps/workshop/content/244850/3777764126/Models/Cubes/large/IceFurnace.mwm
+Z:\media\...\steamapps\workshop\content\244850\467170527\Models\Cubes\AzimuthBatteries\AzBatteryLarge.mwm
+```
+
+Moved to another machine, these name nothing. Moved from Linux to Windows or
+Proton, they can crash the load: on the same machine Proton finds `/home/...`
+through its `Z:` drive, so the mesh loads, and then `MyMeshes.GetContentPath` takes the folder
+above `Models` as the texture root and `MyResourceUtils.NormalizePath` throws
+`UriFormatException` on it in `new Uri(path)`. Reported as DIS-0019.
+
+The load side above already covers this when the world's mods are matched by
+id. Two changes close the rest:
+
+- A prefix on `MyLocalCache.SaveCheckpoint` rewrites every rooted entry that
+  has a path segment naming one of the world's workshop mods into
+  `<publishedFileId>\<path in the mod>`, with backslashes, just before the
+  checkpoint is written. Rooted entries outside the world's workshop mods are
+  dropped. Content-relative vanilla entries are untouched. The load-side
+  remap maps the new form onto the loading machine's mod folder like any
+  other path holding the mod id.
+- The load side drops a rooted path that `Uri.TryCreate` rejects even when it
+  exists, so an older save with another OS's path can't reach
+  `NormalizePath` when its mod isn't matched.
+
+The save format is unchanged. A game without this plugin reads the portable
+entry as a missing Content-relative mesh, logs `Mesh asset ... missing` and
+goes on, as it does with the server paths of every modded multiplayer join.
+It loses only the prewarm of the mod models, and its next save writes
+absolute paths again.
+
+Dedicated servers don't save the cache (`GatherVicinityInformation` returns
+early there), so server worlds are not affected.
+
 ## Testing
 
 Joined the same server from the Linux client with this plugin loaded:
@@ -94,3 +139,28 @@ loading a copy nobody uses. On Linux, keeping the server's backslashes would
 leave the mod blocks invisible unless linux-compat has its render model path
 fix (planned for 1.0.27); with that fix either spelling works. Not yet tested
 on a native Windows install or against a real server.
+
+### Moved saves
+
+Tested on 2026-10-13 with the same Rotary Airlock world, its cache seeded
+with Linux paths.
+
+Pulsar Legacy under Proton (Wine Mono), Steam mode. The cache held the mod's
+own Linux path and the Linux path of an installed workshop mod the world
+doesn't use. Both exist through `Z:`:
+
+| Bugfixes | Load | Saved cache |
+|---|---|---|
+| none | `UriFormatException` in `NormalizePath`, crash | |
+| 1.4.0 | remapped 1, dropped 0, then the same crash on the kept path | |
+| this fix | remapped 1, dropped 1, loads | `1359954841\Models\Cubes\RotaryAirlockTB.mwm` |
+| none, loading that save | loads | the absolute `Z:\...` path again |
+
+Pulsar Interim on Linux, offline, the mod staged as a local folder named by
+its id. Seeded with the mod's path under another user's home and a `Z:` path
+of an unknown mod: remapped 1 and dropped 1, and the save wrote the
+mod-relative form. Reloading that save remapped it again with no
+`Mesh asset ... missing` line. Without Bugfixes the same save loaded, logged
+the mod mesh as missing under `Content`, and saved the absolute path, which
+the next save with Bugfixes turned back into the mod-relative form. No
+exceptions in any of the logs.
