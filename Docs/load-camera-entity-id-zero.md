@@ -91,4 +91,12 @@ On a headless Linux Pulsar 2.4.1 client (Interim) with the same mods:
   client fix, also with the warm-up skipped: the camera loaded before
   WeaponCore created any entity.
 
-Not tested on Windows.
+Under Proton (Pulsar Legacy 2.4.1 on Wine Mono, the Windows build of the
+client plugin), with the same save and mods:
+
+- Without the fix and without any test plugin, the save loaded.
+- With the floating object warm-up skipped, it failed with the same
+  exception in `set_CameraController`; with the fix it logged the line above
+  and loaded.
+
+Not tested on Windows itself.
