@@ -38,10 +38,25 @@ vanilla puts it.
 
 ## Testing
 
-In game under Pulsar, a headless Linux client with the DIS-0015 rig
-(`notes/dis-0015-multiline-paste` in the workspace). The rig opens Custom Data
-of a programmable block, types text, copies with Ctrl+A and Ctrl+C, moves the
-caret, pastes with Ctrl+V, types a `#` marker and reads the custom data back
-after OK.
+In game under Pulsar with the DIS-0015 rig (`notes/dis-0015-multiline-paste`
+in the workspace). The rig opens Custom Data of a programmable block, types
+text, copies with Ctrl+A and Ctrl+C, moves the caret, pastes with Ctrl+V,
+types a `#` marker and reads the custom data back after OK.
 
-TBD
+The Windows build under Proton (Pulsar Legacy, Wine Mono) runs the vanilla
+`PasteText`:
+
+| Scenario | Without the plugin | With the plugin |
+|---|---|---|
+| 3 lines pasted at the start | `line3li#ne1` | `line3#line1` |
+| 3 lines pasted into `abc\|def` | `line3de#f` | `line3#def` |
+| 3 lines pasted over a selection spanning lines | `line3ne#3` | `line3#ne3` |
+
+The single-line control scenario's copy step didn't take under Wine, so it
+pasted the three lines from the previous scenario again. With the plugin the
+caret still ended right after them.
+
+On a headless Linux client, LinuxCompat's paste runs instead. With LinuxCompat
+1.0.30 the results match the vanilla column above whether this plugin is
+loaded or not, so the postfix stays out of the way. With LinuxCompat 1.0.31
+all scenarios are correct, with and without this plugin.
