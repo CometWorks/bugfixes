@@ -40,6 +40,7 @@ None yet.
 - [Clipboard preview leaving its entity creation block open](Docs/clipboard-preview-creation-block.md)
 - [Debris crashing the game on an entity id that is already taken](Docs/debris-entity-id.md)
 - [Blueprints with an empty construction stockpile fail to paste in a hosted world](Docs/empty-stockpile-paste.md)
+- [World fails to load when a mod registers an entity with id 0](Docs/load-camera-entity-id-zero.md)
 
 ## Legal
 
