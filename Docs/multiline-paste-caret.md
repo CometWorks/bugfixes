@@ -2,7 +2,7 @@
 
 **Category:** Client only
 **Patch:** `ClientPlugin/Patches/MultilinePasteCaretPatch.cs`
-**Pull request:** TBD
+**Pull request:** [#18](https://github.com/CometWorks/bugfixes/pull/18)
 
 ## The bug
 
