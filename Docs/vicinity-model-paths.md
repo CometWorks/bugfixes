@@ -4,7 +4,8 @@
 **Patches:** `ClientPlugin/Patches/MySessionVicinityModelPathPatch.cs`,
 `ClientPlugin/Patches/MyLocalCacheVicinityModelPathPatch.cs`
 **Pull requests:** [#1](https://github.com/CometWorks/bugfixes/pull/1),
-[#5](https://github.com/CometWorks/bugfixes/pull/5), DIS-0019 (moved saves)
+[#5](https://github.com/CometWorks/bugfixes/pull/5),
+[#16](https://github.com/CometWorks/bugfixes/pull/16)
 
 ## The bug
 
