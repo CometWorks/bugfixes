@@ -106,6 +106,39 @@ absolute paths again.
 Dedicated servers don't save the cache (`GatherVicinityInformation` returns
 early there), so server worlds are not affected.
 
+## Path forms in the vicinity cache
+
+`VicinityModelsCache` and `VicinityArmorModelsCache` hold the `MyModel.AssetName` strings of the models near the player, unchanged. `VicinityVoxelCache` holds voxel material subtype names, which are portable. Paths that aren't rooted are resolved against the game's `Content` folder. Rooted ones are used as they are.
+
+What gets written, and by whom:
+
+| Who | Model | Form | Relative to | Example |
+|---|---|---|---|---|
+| Any client, saving | vanilla block | relative, `\` | game `Content` | `Models\Cubes\Large\Ramp.mwm` |
+| Linux client (linux-compat), saving | workshop mod | absolute, `/` | | `/home/arthur/.local/share/Steam/steamapps/workshop/content/244850/3777764126/Models/Cubes/large/IceFurnace.mwm` |
+| Windows or Proton client, saving | workshop mod | absolute, `\` | | `Z:\media\Samsung 970 1TB NVMe\Games\Steam Library\steamapps\workshop\content\244850\467170527\Models\Cubes\AzimuthBatteries\AzBatteryLarge.mwm` |
+| Windows or Proton client, saving | legacy `.bin` workshop mod | absolute, `\` | | `Z:\...\244850\420351819\975477922448755271_legacy.bin\Models\ForceFields\LG_SC_ForceField_Ind_Corner.mwm` |
+| Any client, saving | local mod | absolute | | `<user data>\Mods\<mod name>\Models\...` |
+| Client with Bugfixes 1.5.0, saving | workshop mod of the world | relative, `\` | that mod's own folder, found by the published file id in the path | `3777764126\Models\Cubes\large\IceFurnace.mwm` |
+| Client with Bugfixes 1.5.0, saving | any other rooted path (local mod, mod not in the world) | dropped | | |
+| Dedicated server | any | nothing saved, `GatherVicinityInformation` returns early on a DS | | |
+| Dedicated server, answering a joining client | vanilla block | relative | game `Content` | `Models\Cubes\Large\Ramp.mwm` |
+| Dedicated server, answering a joining client | workshop mod | absolute, the server's own path | | `G:\Space\Season4\Pertam\Instance\content\244850\3768506853\Models\Cubes\small\RetroCockpit.mwm` |
+
+How a loading client reads each form (a single-player load and the answer to a join take the same path, `PreloadVicinityCache`):
+
+| Entry | Vanilla client | Client with Bugfixes 1.5.0 |
+|---|---|---|
+| `Models\...` | loads from `Content` | same |
+| `<id>\Models\...` (Bugfixes 1.5.0 save) | looks for `Content\<id>\Models\...`, logs `Mesh asset ... missing`, goes on | remapped to this client's folder of mod `<id>`: `<mod folder>\Models\...` on Windows, `<mod folder>/Models/...` on Linux. Mod not in the world: left as is and logged missing, like vanilla |
+| absolute path that exists on this machine (same machine saved it) | loads | remapped by id if the world has the mod, otherwise kept |
+| absolute path of another machine that doesn't exist here | logs missing, goes on | remapped by id if the world has the mod, otherwise dropped |
+| Linux `/home/...` path, read under Proton on the same machine | exists through `Z:`, mesh loads, then `UriFormatException` on the texture folder (the reported crash) | remapped by id, otherwise dropped by the `Uri.TryCreate` check. Bugfixes 1.4.0 kept it and crashed. |
+| Linux `/home/...` path, read on native Windows | expected to resolve to `C:\home\...` and log missing (not tested) | remapped by id or dropped |
+| Windows drive path, read on Linux | linux-compat maps or strips the drive: loads only if the same files are there, otherwise logs missing | remapped by id or dropped |
+
+The texture root of a rooted model is the part of its path before `Models` (`MyMeshes.GetContentPath`), and `MyResourceUtils.NormalizePath` passes it to `new Uri(...)`. That is where a Linux path throws on Windows. A path that isn't rooted gets no texture root of its own, so it can't hit this.
+
 ## Testing
 
 Joined the same server from the Linux client with this plugin loaded:
