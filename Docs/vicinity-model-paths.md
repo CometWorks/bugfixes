@@ -110,20 +110,34 @@ early there), so server worlds are not affected.
 
 `VicinityModelsCache` and `VicinityArmorModelsCache` hold the `MyModel.AssetName` strings of the models near the player, unchanged. `VicinityVoxelCache` holds voxel material subtype names, which are portable. Paths that aren't rooted are resolved against the game's `Content` folder. Rooted ones are used as they are.
 
-What gets written, and by whom:
+What gets written, and by whom. The examples are shortened; the full paths are listed below the table.
 
-| Who | Model | Form | Relative to | Example |
-|---|---|---|---|---|
-| Any client, saving | vanilla block | relative, `\` | game `Content` | `Models\Cubes\Large\Ramp.mwm` |
-| Linux client (linux-compat), saving | workshop mod | absolute, `/` | | `/home/arthur/.local/share/Steam/steamapps/workshop/content/244850/3777764126/Models/Cubes/large/IceFurnace.mwm` |
-| Windows or Proton client, saving | workshop mod | absolute, `\` | | `Z:\media\Samsung 970 1TB NVMe\Games\Steam Library\steamapps\workshop\content\244850\467170527\Models\Cubes\AzimuthBatteries\AzBatteryLarge.mwm` |
-| Windows or Proton client, saving | legacy `.bin` workshop mod | absolute, `\` | | `Z:\...\244850\420351819\975477922448755271_legacy.bin\Models\ForceFields\LG_SC_ForceField_Ind_Corner.mwm` |
-| Any client, saving | local mod | absolute | | `<user data>\Mods\<mod name>\Models\...` |
-| Client with Bugfixes 1.5.0, saving | workshop mod of the world | relative, `\` | that mod's own folder, found by the published file id in the path | `3777764126\Models\Cubes\large\IceFurnace.mwm` |
-| Client with Bugfixes 1.5.0, saving | any other rooted path (local mod, mod not in the world) | dropped | | |
-| Dedicated server | any | nothing saved, `GatherVicinityInformation` returns early on a DS | | |
-| Dedicated server, answering a joining client | vanilla block | relative | game `Content` | `Models\Cubes\Large\Ramp.mwm` |
-| Dedicated server, answering a joining client | workshop mod | absolute, the server's own path | | `G:\Space\Season4\Pertam\Instance\content\244850\3768506853\Models\Cubes\small\RetroCockpit.mwm` |
+| Who | Model | Form | Example |
+|---|---|---|---|
+| Any client, saving | vanilla block | relative to `Content` | `Models\…\Ramp.mwm` |
+| Linux client (linux-compat), saving | workshop mod | absolute | `/home/…/244850/3777764126/…` (1) |
+| Windows or Proton client, saving | workshop mod | absolute | `Z:\…\244850\467170527\…` (2) |
+| Windows or Proton client, saving | legacy `.bin` workshop mod | absolute | `Z:\…\420351819\…_legacy.bin\…` (3) |
+| Any client, saving | local mod | absolute | `<user data>\Mods\<name>\…` |
+| Client with Bugfixes 1.5.0, saving | workshop mod of the world | relative to the mod folder | `3777764126\Models\…` (4) |
+| Client with Bugfixes 1.5.0, saving | any other rooted path | dropped | |
+| Dedicated server, saving | any | not saved | |
+| Dedicated server, answering a join | vanilla block | relative to `Content` | `Models\…\Ramp.mwm` |
+| Dedicated server, answering a join | workshop mod | absolute, server's path | `G:\…\244850\3768506853\…` (5) |
+
+Full examples:
+
+1. `/home/arthur/.local/share/Steam/steamapps/workshop/content/244850/3777764126/Models/Cubes/large/IceFurnace.mwm`
+2. `Z:\media\Samsung 970 1TB NVMe\Games\Steam Library\steamapps\workshop\content\244850\467170527\Models\Cubes\AzimuthBatteries\AzBatteryLarge.mwm`
+3. `Z:\...\244850\420351819\975477922448755271_legacy.bin\Models\ForceFields\LG_SC_ForceField_Ind_Corner.mwm`
+4. `3777764126\Models\Cubes\large\IceFurnace.mwm`
+5. `G:\Space\Season4\Pertam\Instance\content\244850\3768506853\Models\Cubes\small\RetroCockpit.mwm`
+
+Notes on the forms:
+
+- Separators are whatever the writer used: `/` from a Linux client, `\` from Windows or Proton, and `\` in the Bugfixes 1.5.0 form so the rest reads like the mod's `.sbc` text.
+- The Bugfixes 1.5.0 form starts at the path segment that names the mod's published file id. Rooted paths with no such segment for one of the world's mods are dropped: local mods and mods the world doesn't use.
+- A dedicated server never saves the cache: `GatherVicinityInformation` returns early on a DS.
 
 How a loading client reads each form (a single-player load and the answer to a join take the same path, `PreloadVicinityCache`):
 
