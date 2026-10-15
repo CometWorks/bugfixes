@@ -2,7 +2,7 @@
 
 **Category:** Client only
 **Patch:** `ClientPlugin/Patches/TextAtlasAlphamaskPatch.cs`
-**Pull request:** TBD
+**Pull request:** [#24](https://github.com/CometWorks/bugfixes/pull/24)
 
 ## The bug
 
