@@ -42,9 +42,9 @@ None yet.
 - [Debris crashing the game on an entity id that is already taken](Docs/debris-entity-id.md)
 - [Blueprints with an empty construction stockpile fail to paste in a hosted world](Docs/empty-stockpile-paste.md)
 - [World fails to load when a mod registers an entity with id 0](Docs/load-camera-entity-id-zero.md)
+- [Mod world storage in the wrong folder when the world folder is renamed](Docs/world-save-path.md)
 - [Files a mod left open staying locked after the world unloads](Docs/mod-file-handles.md)
 - [Crash when a rocket hits a character whose identity was removed](Docs/character-missile-identity.md)
-- [Mod world storage in the wrong folder when the world folder is renamed](Docs/world-save-path.md)
 
 ## Legal
 
