@@ -127,7 +127,7 @@ What gets written, and by whom. The examples are shortened; the full paths are l
 
 Full examples:
 
-1. `/home/arthur/.local/share/Steam/steamapps/workshop/content/244850/3777764126/Models/Cubes/large/IceFurnace.mwm`
+1. `/home/player/.local/share/Steam/steamapps/workshop/content/244850/3777764126/Models/Cubes/large/IceFurnace.mwm`
 2. `Z:\media\Samsung 970 1TB NVMe\Games\Steam Library\steamapps\workshop\content\244850\467170527\Models\Cubes\AzimuthBatteries\AzBatteryLarge.mwm`
 3. `Z:\...\244850\420351819\975477922448755271_legacy.bin\Models\ForceFields\LG_SC_ForceField_Ind_Corner.mwm`
 4. `3777764126\Models\Cubes\large\IceFurnace.mwm`
