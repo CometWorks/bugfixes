@@ -74,19 +74,6 @@ Remote suite's space world and screenshotted from the same spots with
 - About 0.8 m away the same, with smaller steps.
 - About 11 m away the text reads about the same with and without the fix.
 
-Crops of the label, scaled up with nearest neighbor. About 0.5 m away, at
-Low and High:
-
-![Label at 0.5 m, Low and High, without and with the fix](images/text-atlas-edges-near-0.5m.png)
-
-About 0.8 m away at Low:
-
-![Label at 0.8 m, Low, without and with the fix](images/text-atlas-edges-low-0.8m.png)
-
-About 11 m away:
-
-![Label at 11 m, Low without and with the fix, High with the fix](images/text-atlas-edges-11m.png)
-
 The game log has `Using the smoothed text atlas mask` once per start, and the
 generated file decodes to the expected 1024x1024 R8 texture with 11 mip
 levels. Not tested on Windows.
