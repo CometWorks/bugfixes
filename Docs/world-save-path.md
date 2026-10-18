@@ -101,6 +101,20 @@ world's own `Storage` folder for the read, exists and delete calls.
   `Saves/Probe Session` all along, the folder the server saves the new world
   to.
 
+On 2026-10-18, after making the fix opt-in, the same runs again, on Linux with
+the same game, Pulsar and Magnetar versions. The probe makes 9 checks at each of
+the three points, 27 per run:
+
+- `WorldStorageInWorldFolder` on: the renamed world passed all 27 checks on
+  the client and on the server, with one info line per load. The matching
+  folder passed all 27 and the fix logged nothing. The template world behaved
+  as without the plugin.
+- The setting at its default, with `Bugfixes.cfg` written by the plugin
+  (`WorldStorageInWorldFolder` false): every probe line and every storage
+  file was the same as without the plugin: the renamed and the matching
+  folder on the client and on the server, and the template on the server.
+  The renamed world got the vanilla folder, failing 21 of the 27 checks.
+
 Not tested: Windows (Pulsar Legacy and MagnetarLegacy on .NET Framework),
 Torch, a world downloaded from the Workshop itself and a real mod. Their path
 goes through the same `MySession.Load` and storage helpers.
