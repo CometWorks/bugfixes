@@ -28,7 +28,8 @@ namespace ClientPlugin.Patches;
 // use. The copy holds the signed distance to the glyph edge, blurred to remove the steps of
 // the source, and maps a distance of one texel to 0.5 on each side of the edge in every mip
 // level. The edges stay where they were, but bilinear sampling now draws them straight.
-// Smaller levels keep the coverage of the top one so the text does not fade out from afar.
+// Smaller levels keep the coverage of the top one, and never drop below the share of each
+// texel the glyphs cover, so thin strokes do not break up or fade out from afar.
 // The copy is uncompressed R8, because BC4 quantization brings back a visible wobble.
 //
 // ReSharper disable once UnusedType.Global
@@ -44,6 +45,19 @@ public static class TextAtlasAlphamaskPatch
     // Blur of the distance field in full resolution texels. The source steps one texel
     // sideways every few rows along a slanted edge; this is wide enough to even that out.
     private const double BlurSigma = 2;
+
+    // From this mip level on, a texel is at least 8 full size texels wide and bilinear
+    // sampling of the distance field starts to lose parts of thin strokes. The levels above
+    // it are only drawn from close up, where the distance field alone gives the straight edges.
+    private const int FirstCoverageLevel = 3;
+
+    // The glyph strokes are about 25 full size texels wide, so from this level on (32 texels
+    // per texel) they are thinner than a texel.
+    private const int FirstThinStrokeLevel = 5;
+
+    // How hard each level of the held coverage pushes away from 0.5. Like the game's own
+    // mips, it keeps a stroke thinner than a texel as one texel instead of letting it fade.
+    private const double HoldGain = 3;
 
     private static readonly object Lock = new();
     private static bool tried;
@@ -195,7 +209,13 @@ public static class TextAtlasAlphamaskPatch
 
         var coverage = inside.Count(x => x) / (double)inside.Length;
         var level = distance;
-        for (var s = size; ; s /= 2)
+
+        // Share of each texel the glyphs cover (area), and the same with every level pushed
+        // away from 0.5 (held), both made from the full size mask
+        var area = inside.Select(x => x ? 1f : 0f).ToArray();
+        var held = (float[])area.Clone();
+
+        for (int s = size, index = 0; ; s /= 2, index++)
         {
             // Strokes thinner than a texel would vanish from the small levels, and the text
             // with them when seen from afar. Shift the edge so each level covers as much as
@@ -209,31 +229,53 @@ public static class TextAtlasAlphamaskPatch
                 bias = -sorted[level.Length - insideCount];
             }
 
-            // One texel of this level from the edge maps to 0 or 1
-            foreach (var d in level)
-                writer.Write(
-                    (byte)Math.Round(255 * Math.Min(1, Math.Max(0, 0.5 + (d + bias) / 2)))
-                );
+            // One texel of this level from the edge maps to 0 or 1. Averaging the distances
+            // still thins strokes that get close to a texel wide, so the small levels never
+            // go below the coverage of the glyphs either.
+            var floor =
+                index < FirstCoverageLevel ? null
+                : index < FirstThinStrokeLevel ? area
+                : held;
+            for (var i = 0; i < level.Length; i++)
+            {
+                var value = Math.Min(1, Math.Max(0, 0.5 + (level[i] + bias) / 2));
+                if (floor != null)
+                    value = Math.Max(value, floor[i]);
+                writer.Write((byte)Math.Round(255 * value));
+            }
 
             if (s == 1)
                 break;
 
             // Halve the resolution, the distances shrink with the texel size
-            var half = s / 2;
-            var next = new float[half * half];
-            for (var y = 0; y < half; y++)
-            for (var x = 0; x < half; x++)
-            {
-                var i = 2 * y * s + 2 * x;
-                next[y * half + x] =
-                    (level[i] + level[i + 1] + level[i + s] + level[i + s + 1]) / 8;
-            }
-
-            level = next;
+            level = Downsample(level, s, d => d / 2);
+            area = Downsample(area, s, a => a);
+            held = Downsample(
+                held,
+                s,
+                a => (float)Math.Min(1, Math.Max(0, 0.5 + HoldGain * (a - 0.5)))
+            );
         }
 
         writer.Flush();
         return memory.ToArray();
+    }
+
+    // Average of each 2x2 block, mapped
+    private static float[] Downsample(float[] level, int size, Func<float, float> map)
+    {
+        var half = size / 2;
+        var next = new float[half * half];
+        for (var y = 0; y < half; y++)
+        for (var x = 0; x < half; x++)
+        {
+            var i = 2 * y * size + 2 * x;
+            next[y * half + x] = map(
+                (level[i] + level[i + 1] + level[i + size] + level[i + size + 1]) / 4
+            );
+        }
+
+        return next;
     }
 
     // Euclidean distance from each texel to the nearest texel whose flag equals target
