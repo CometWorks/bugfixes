@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -28,8 +29,9 @@ namespace ClientPlugin.Patches;
 // use. The copy holds the signed distance to the glyph edge, blurred to remove the steps of
 // the source, and maps a distance of one texel to 0.5 on each side of the edge in every mip
 // level. The edges stay where they were, but bilinear sampling now draws them straight.
-// Smaller levels keep the coverage of the top one, and never drop below the share of each
-// texel the glyphs cover, so thin strokes do not break up or fade out from afar.
+// Smaller levels keep the coverage of the top one and never drop below the share of each
+// texel the glyphs cover, so thin strokes do not break up or fade out from afar. From the
+// level where the strokes get thinner than a texel on, the copy uses the game's own levels.
 // The copy is uncompressed R8, because BC4 quantization brings back a visible wobble.
 //
 // ReSharper disable once UnusedType.Global
@@ -52,12 +54,14 @@ public static class TextAtlasAlphamaskPatch
     private const int FirstCoverageLevel = 3;
 
     // The glyph strokes are about 25 full size texels wide, so from this level on (32 texels
-    // per texel) they are thinner than a texel.
-    private const int FirstThinStrokeLevel = 5;
+    // per texel) they are thinner than a texel. The game's own levels keep such a stroke one
+    // texel wide, which draws it more completely than anything made from the distance field,
+    // so the copy takes them over unchanged and far text looks the same as without the fix.
+    private const int FirstGameLevel = 5;
 
-    // How hard each level of the held coverage pushes away from 0.5. Like the game's own
-    // mips, it keeps a stroke thinner than a texel as one texel instead of letting it fade.
-    private const double HoldGain = 3;
+    // The level before that never draws less than the game's own either, so a trilinear
+    // blend of the two, which far text gets, covers at least what the game's mips cover.
+    private const int FirstGameFloorLevel = FirstGameLevel - 1;
 
     private static readonly object Lock = new();
     private static bool tried;
@@ -103,8 +107,8 @@ public static class TextAtlasAlphamaskPatch
                 dds = memory.ToArray();
             }
 
-            var inside = DecodeBc4Mask(dds, out var size);
-            if (inside == null)
+            var gameLevels = DecodeBc4Mask(dds, out var size);
+            if (gameLevels == null)
             {
                 Common.Logger.Warning(
                     "Text atlas mask is not a square BC4 texture, leaving it alone: {0}",
@@ -113,7 +117,8 @@ public static class TextAtlasAlphamaskPatch
                 return null;
             }
 
-            var output = CreateDistanceDds(inside, size);
+            var inside = gameLevels[0].Select(x => x >= 128).ToArray();
+            var output = CreateDistanceDds(inside, size, gameLevels);
 
             var outputPath = Path.Combine(Common.DataDir, AtlasName);
             if (!File.Exists(outputPath) || !File.ReadAllBytes(outputPath).SequenceEqual(output))
@@ -132,8 +137,8 @@ public static class TextAtlasAlphamaskPatch
         }
     }
 
-    // Returns the top mip level as inside (>= 0.5) flags, or null if the format is unexpected
-    private static bool[] DecodeBc4Mask(byte[] dds, out int size)
+    // Returns the values of every mip level in the file, or null if the format is unexpected
+    private static byte[][] DecodeBc4Mask(byte[] dds, out int size)
     {
         size = 0;
         if (dds.Length < 148 || Encoding.ASCII.GetString(dds, 0, 4) != "DDS ")
@@ -155,26 +160,41 @@ public static class TextAtlasAlphamaskPatch
             return null;
 
         size = width;
-        var inside = new bool[size * size];
-        var blocks = size / 4;
-        for (var by = 0; by < blocks; by++)
-        for (var bx = 0; bx < blocks; bx++)
+        var mipCount = Math.Max(1, BitConverter.ToInt32(dds, 28));
+        var levels = new List<byte[]>();
+        var levelOffset = dataOffset;
+        for (var s = size; levels.Count < mipCount && s >= 1; s /= 2)
         {
-            var offset = dataOffset + (by * blocks + bx) * 8;
-            int a0 = dds[offset];
-            int a1 = dds[offset + 1];
-            var codes = 0UL;
-            for (var i = 0; i < 6; i++)
-                codes |= (ulong)dds[offset + 2 + i] << (8 * i);
+            // Levels below 4x4 still take a whole 4x4 block
+            var blocks = Math.Max(1, s / 4);
+            if (dds.Length < levelOffset + blocks * blocks * 8)
+                break;
 
-            for (var i = 0; i < 16; i++)
+            var values = new byte[s * s];
+            for (var by = 0; by < blocks; by++)
+            for (var bx = 0; bx < blocks; bx++)
             {
-                var value = Bc4Value(a0, a1, (int)(codes >> (3 * i)) & 7);
-                inside[(by * 4 + i / 4) * size + bx * 4 + i % 4] = value >= 128;
+                var offset = levelOffset + (by * blocks + bx) * 8;
+                int a0 = dds[offset];
+                int a1 = dds[offset + 1];
+                var codes = 0UL;
+                for (var i = 0; i < 6; i++)
+                    codes |= (ulong)dds[offset + 2 + i] << (8 * i);
+
+                for (var i = 0; i < 16; i++)
+                {
+                    int x = bx * 4 + i % 4,
+                        y = by * 4 + i / 4;
+                    if (x < s && y < s)
+                        values[y * s + x] = (byte)Bc4Value(a0, a1, (int)(codes >> (3 * i)) & 7);
+                }
             }
+
+            levels.Add(values);
+            levelOffset += blocks * blocks * 8;
         }
 
-        return inside;
+        return levels.ToArray();
     }
 
     private static int Bc4Value(int a0, int a1, int code) =>
@@ -188,7 +208,7 @@ public static class TextAtlasAlphamaskPatch
             _ => ((6 - code) * a0 + (code - 1) * a1) / 5,
         };
 
-    private static byte[] CreateDistanceDds(bool[] inside, int size)
+    private static byte[] CreateDistanceDds(bool[] inside, int size, byte[][] gameLevels)
     {
         // Signed distance to the edge in texels, positive inside
         var toOutside = DistanceTransform(inside, size, false);
@@ -210,39 +230,25 @@ public static class TextAtlasAlphamaskPatch
         var coverage = inside.Count(x => x) / (double)inside.Length;
         var level = distance;
 
-        // Share of each texel the glyphs cover (area), and the same with every level pushed
-        // away from 0.5 (held), both made from the full size mask
+        // Share of each texel the glyphs cover, from the full size mask
         var area = inside.Select(x => x ? 1f : 0f).ToArray();
-        var held = (float[])area.Clone();
 
         for (int s = size, index = 0; ; s /= 2, index++)
         {
-            // Strokes thinner than a texel would vanish from the small levels, and the text
-            // with them when seen from afar. Shift the edge so each level covers as much as
-            // the top one, like the game's own mips do.
-            float bias = 0;
-            var insideCount = (int)Math.Round(coverage * level.Length);
-            if (s < size && insideCount > 0)
-            {
-                var sorted = (float[])level.Clone();
-                Array.Sort(sorted);
-                bias = -sorted[level.Length - insideCount];
-            }
-
-            // One texel of this level from the edge maps to 0 or 1. Averaging the distances
-            // still thins strokes that get close to a texel wide, so the small levels never
-            // go below the coverage of the glyphs either.
-            var floor =
-                index < FirstCoverageLevel ? null
-                : index < FirstThinStrokeLevel ? area
-                : held;
-            for (var i = 0; i < level.Length; i++)
-            {
-                var value = Math.Min(1, Math.Max(0, 0.5 + (level[i] + bias) / 2));
-                if (floor != null)
-                    value = Math.Max(value, floor[i]);
-                writer.Write((byte)Math.Round(255 * value));
-            }
+            writer.Write(
+                index >= FirstGameLevel && index < gameLevels.Length
+                    ? gameLevels[index]
+                    : DistanceLevel(
+                        level,
+                        s < size,
+                        coverage,
+                        index,
+                        area,
+                        index >= FirstGameFloorLevel && index < gameLevels.Length
+                            ? gameLevels[index]
+                            : null
+                    )
+            );
 
             if (s == 1)
                 break;
@@ -250,15 +256,50 @@ public static class TextAtlasAlphamaskPatch
             // Halve the resolution, the distances shrink with the texel size
             level = Downsample(level, s, d => d / 2);
             area = Downsample(area, s, a => a);
-            held = Downsample(
-                held,
-                s,
-                a => (float)Math.Min(1, Math.Max(0, 0.5 + HoldGain * (a - 0.5)))
-            );
         }
 
         writer.Flush();
         return memory.ToArray();
+    }
+
+    // One mip level from the distance field (see CreateDistanceDds)
+    private static byte[] DistanceLevel(
+        float[] level,
+        bool shrunk,
+        double coverage,
+        int index,
+        float[] area,
+        byte[] gameLevel
+    )
+    {
+        // Strokes thinner than a texel would vanish from the small levels, and the text
+        // with them when seen from afar. Shift the edge so each level covers as much as
+        // the top one, like the game's own mips do.
+        float bias = 0;
+        var insideCount = (int)Math.Round(coverage * level.Length);
+        if (shrunk && insideCount > 0)
+        {
+            var sorted = (float[])level.Clone();
+            Array.Sort(sorted);
+            bias = -sorted[level.Length - insideCount];
+        }
+
+        // One texel of this level from the edge maps to 0 or 1. Averaging the distances
+        // still thins strokes that get close to a texel wide, so the small levels never
+        // go below the coverage of the glyphs either.
+        var floor = index < FirstCoverageLevel ? null : area;
+        var values = new byte[level.Length];
+        for (var i = 0; i < level.Length; i++)
+        {
+            var value = Math.Min(1, Math.Max(0, 0.5 + (level[i] + bias) / 2));
+            if (floor != null)
+                value = Math.Max(value, floor[i]);
+            if (gameLevel != null)
+                value = Math.Max(value, gameLevel[i] / 255.0);
+            values[i] = (byte)Math.Round(255 * value);
+        }
+
+        return values;
     }
 
     // Average of each 2x2 block, mapped
