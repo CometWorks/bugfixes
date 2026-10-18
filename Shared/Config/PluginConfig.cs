@@ -28,6 +28,8 @@ public class PluginConfig : IPluginConfig
     }
 
     private bool enabled = true;
+    private bool worldStorageInWorldFolder;
+
     // TODO: Implement your config fields here
     // The default values here will apply to Client and Dedicated.
     // The default values for Torch are defined in TorchPlugin.
@@ -36,6 +38,12 @@ public class PluginConfig : IPluginConfig
     {
         get => enabled;
         set => SetValue(ref enabled, value);
+    }
+
+    public bool WorldStorageInWorldFolder
+    {
+        get => worldStorageInWorldFolder;
+        set => SetValue(ref worldStorageInWorldFolder, value);
     }
 
     // TODO: Encapsulate your config fields as properties here

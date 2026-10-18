@@ -2,6 +2,7 @@
 
 **Category:** Client + Server
 **Patch:** `Shared/Patches/WorldSavePathPatch.cs`
+**Off by default:** turn it on with `WorldStorageInWorldFolder` in `Bugfixes.cfg`
 
 ## The bug
 
@@ -37,6 +38,29 @@ dedicated server, is loaded from the template folder and saved to
 belongs.
 
 ## The fix
+
+The fix is opt-in. It changes where mods keep their files for every world
+whose folder name differs from its session name, so a mod would no longer find
+what it wrote to the vanilla folder before, and a mod or a server tool that
+expects the vanilla folder may break. With the setting off, the default, the
+game uses its own path, exactly as without the plugin.
+
+To turn it on, set `WorldStorageInWorldFolder` to `true` in `Bugfixes.cfg` and
+restart the game or the server. The plugin writes that file with the defaults
+on its first start, into the game's user data folder on a client
+(`%AppData%\SpaceEngineers` on Windows) and into the server's data folder
+(the `-path` of a Magnetar server):
+
+```xml
+<PluginConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Enabled>true</Enabled>
+  <WorldStorageInWorldFolder>true</WorldStorageInWorldFolder>
+</PluginConfig>
+```
+
+Before turning it on for an existing world, move its mod data from
+`Saves/<session name>/Storage` into the world's own `Storage` folder, if a mod
+already wrote some there.
 
 A transpiler on `MySession.Load` changes the value it gives `WorldSavePath`.
 When the world is loaded from somewhere other than the game's `Content`
