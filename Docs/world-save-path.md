@@ -2,6 +2,7 @@
 
 **Category:** Client + Server
 **Patch:** `Shared/Patches/WorldSavePathPatch.cs`
+**Off by default:** turn it on with `WorldStorageInWorldFolder` in `Bugfixes.cfg`
 
 ## The bug
 
@@ -37,6 +38,29 @@ dedicated server, is loaded from the template folder and saved to
 belongs.
 
 ## The fix
+
+The fix is opt-in. It changes where mods keep their files for every world
+whose folder name differs from its session name, so a mod would no longer find
+what it wrote to the vanilla folder before, and a mod or a server tool that
+expects the vanilla folder may break. With the setting off, the default, the
+game uses its own path, exactly as without the plugin.
+
+To turn it on, set `WorldStorageInWorldFolder` to `true` in `Bugfixes.cfg` and
+restart the game or the server. The plugin writes that file with the defaults
+on its first start, into the game's user data folder on a client
+(`%AppData%\SpaceEngineers` on Windows) and into the server's data folder
+(the `-path` of a Magnetar server):
+
+```xml
+<PluginConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Enabled>true</Enabled>
+  <WorldStorageInWorldFolder>true</WorldStorageInWorldFolder>
+</PluginConfig>
+```
+
+Before turning it on for an existing world, move its mod data from
+`Saves/<session name>/Storage` into the world's own `Storage` folder, if a mod
+already wrote some there.
 
 A transpiler on `MySession.Load` changes the value it gives `WorldSavePath`.
 When the world is loaded from somewhere other than the game's `Content`
@@ -76,6 +100,20 @@ world's own `Storage` folder for the read, exists and delete calls.
   `Probe Session`: with and without the fix the storage was in
   `Saves/Probe Session` all along, the folder the server saves the new world
   to.
+
+On 2026-10-18, after making the fix opt-in, the same runs again, on Linux with
+the same game, Pulsar and Magnetar versions. The probe makes 9 checks at each of
+the three points, 27 per run:
+
+- `WorldStorageInWorldFolder` on: the renamed world passed all 27 checks on
+  the client and on the server, with one info line per load. The matching
+  folder passed all 27 and the fix logged nothing. The template world behaved
+  as without the plugin.
+- The setting at its default, with `Bugfixes.cfg` written by the plugin
+  (`WorldStorageInWorldFolder` false): every probe line and every storage
+  file was the same as without the plugin: the renamed and the matching
+  folder on the client and on the server, and the template on the server.
+  The renamed world got the vanilla folder, failing 21 of the 27 checks.
 
 Not tested: Windows (Pulsar Legacy and MagnetarLegacy on .NET Framework),
 Torch, a world downloaded from the Workshop itself and a real mod. Their path
