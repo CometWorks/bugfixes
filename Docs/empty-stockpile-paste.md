@@ -48,10 +48,10 @@ The fix was first written in the Linux compatibility plugin
 ## Testing
 
 On a headless Pulsar client on Linux hosting the Remote test space world as a
-`PRIVATE` lobby over DirectTransport (rig: `se1/notes/se1-0137-empty-stockpile-paste`
-in the workspace). It pastes three one-grid blueprints through the Remote
-plugin's paste endpoint, which raises `TryPasteGrid_Implementation` on builders
-freshly read from XML:
+`PRIVATE` lobby over DirectTransport (rig: workspace note
+[#642](https://tasks.cometworks.se/tasks/642)). It pastes three one-grid
+blueprints through the Remote plugin's paste endpoint, which raises
+`TryPasteGrid_Implementation` on builders freshly read from XML:
 
 | blueprint | plugin disabled in `Bugfixes.cfg` | plugin enabled |
 | --- | --- | --- |

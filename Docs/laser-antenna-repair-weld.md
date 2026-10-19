@@ -36,10 +36,10 @@ claimed.
 ## Testing
 
 On a Magnetar dedicated server on Linux, with two DirectTransport clients,
-using the DIS-0004 rig (`notes/dis-0004-laser-antenna` in the workspace). A
-test probe on the server damages one antenna of a permanent link by 300 HP,
-then makes the game's `IncreaseMountLevel` weld it for a joined player who
-doesn't own it:
+using the DIS-0004 rig (workspace note
+[#555](https://tasks.cometworks.se/tasks/555)). A test probe on the server
+damages one antenna of a permanent link by 300 HP, then makes the game's
+`IncreaseMountLevel` weld it for a joined player who doesn't own it:
 
 - Without the plugin, both antennas went from connected to idle, the
   permanent flag was cleared and they stayed idle. Both clients showed the

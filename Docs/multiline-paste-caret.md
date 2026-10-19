@@ -38,10 +38,11 @@ vanilla puts it.
 
 ## Testing
 
-In game under Pulsar with the DIS-0015 rig (`notes/dis-0015-multiline-paste`
-in the workspace). The rig opens Custom Data of a programmable block, types
-text, copies with Ctrl+A and Ctrl+C, moves the caret, pastes with Ctrl+V,
-types a `#` marker and reads the custom data back after OK.
+In game under Pulsar with the DIS-0015 rig (workspace note
+[#559](https://tasks.cometworks.se/tasks/559)). The rig opens Custom Data of
+a programmable block, types text, copies with Ctrl+A and Ctrl+C, moves the
+caret, pastes with Ctrl+V, types a `#` marker and reads the custom data back
+after OK.
 
 The Windows build under Proton (Pulsar Legacy, Wine Mono) runs the vanilla
 `PasteText`:
