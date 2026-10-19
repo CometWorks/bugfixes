@@ -46,6 +46,8 @@ None yet.
 - [Mod world storage in the wrong folder when the world folder is renamed](Docs/world-save-path.md) (opt-in, off by default)
 - [Files a mod left open staying locked after the world unloads](Docs/mod-file-handles.md)
 - [Crash when a rocket hits a character whose identity was removed](Docs/character-missile-identity.md)
+- [Conveyor sorters failing to load when a mod adds sorter controls early](Docs/conveyor-sorter-controls.md)
+- [Crash after a clipboard or projector preview grid fails to load](Docs/clipboard-preview-failed-grid.md)
 
 ## Legal
 
