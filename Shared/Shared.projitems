@@ -17,6 +17,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\CharacterMissileIdentityPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ClipboardPreviewCreationBlockPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\ClipboardPreviewFailedGridPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\ConveyorSorterControlsPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\DebrisEntityIdPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EmptyStockpilePastePatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\HavokEndOfStepCallbackPatch.cs" />
