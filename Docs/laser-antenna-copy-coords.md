@@ -34,10 +34,10 @@ does.
 ## Testing
 
 In game under Pulsar, a headless Linux client with the DIS-0004 rig
-(`notes/dis-0004-laser-antenna` in the workspace). A test probe presses
-"Copy my coords" on an antenna named `LA Bravo with a 33 character name`,
-records what it wrote, and the other antenna's programmable block pastes
-that string:
+(workspace note [#555](https://tasks.cometworks.se/tasks/555)). A test probe
+presses "Copy my coords" on an antenna named `LA Bravo with a 33 character
+name`, records what it wrote, and the other antenna's programmable block
+pastes that string:
 
 - Without the plugin, the button wrote
   `GPS:LA Bravo with a 33 character name:500:5.18:20000:`, `ParseOneGPS`

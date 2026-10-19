@@ -49,14 +49,13 @@ level. Contacts with an existing identity run unchanged.
 
 ## Testing
 
-A test plugin (`se1/notes/se1-0209-character-contact-nre` in the CometWorks
-workspace) runs five scenarios once a world is loaded, each with a fresh
-character: a character flying into a static slab, a dynamic armor block hitting
-a character at 40 m/s, a character getting on a ladder, a rocket hitting a
-character with an identity, and a rocket hitting a character whose identity was
-just removed. It logs every damage the characters take and every
-`NullReferenceException` thrown in a contact point callback, with its IL
-offset.
+A test plugin (workspace note [#650](https://tasks.cometworks.se/tasks/650))
+runs five scenarios once a world is loaded, each with a fresh character: a
+character flying into a static slab, a dynamic armor block hitting a character
+at 40 m/s, a character getting on a ladder, a rocket hitting a character with
+an identity, and a rocket hitting a character whose identity was just removed.
+It logs every damage the characters take and every `NullReferenceException`
+thrown in a contact point callback, with its IL offset.
 
 On Linux (game 1.210.014, 2026-10-15), both on a headless Pulsar 2.4.3 client
 in an offline survival world and on a Magnetar 2.4.3.3 dedicated server:
