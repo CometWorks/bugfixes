@@ -75,5 +75,13 @@ a small grid with a Drain All sorter.
   physics and Drain All still on. The game logged the info line once and kept
   running.
 
+With Multigrid Projector 0.9.9 loaded as well, a projector projected a
+blueprint of the test ship with a Drain All sorter added, the sorter was
+built from the projection with Drain All on, and removing the blueprint left
+no preview grid behind. The run logged the same steps and results as one with
+Multigrid Projector but without Bugfixes and without the early sorter
+controls. With the early sorter controls and without Bugfixes, the projection
+crashed the game as above.
+
 The rig is in the workspace, `testing/windows-test-kits/tm-1155-paste-sorter-ctd`.
 Not tested on Windows or on a dedicated server.

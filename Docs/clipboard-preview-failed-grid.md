@@ -61,9 +61,10 @@ any block that fails to load.
 - With Bugfixes, the preview was hidden with the info line, entity id 0 stayed
   free, and the game kept running with the player still in the cockpit.
 
-Only the creative clipboard was tested with the failing block; a projector
-builds its preview with the same method, but its "cannot find blueprint"
-message was not checked.
+With Multigrid Projector 0.9.9 loaded as well, a projector with the failing
+block behaved the same: without Bugfixes the game crashed, with it the
+projection was hidden and the game kept running. The projector's "cannot find
+blueprint" message was not checked, the client was headless.
 
 The rig is in the workspace, `testing/windows-test-kits/tm-1155-paste-sorter-ctd`.
 Not tested on Windows or on a dedicated server.
