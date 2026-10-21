@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LoadCameraEntityIdZeroPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ModFileHandlesPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\RadiationStatClosedCharacterPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\VoxelClipmapWaitSetPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\WorldSavePathPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\Common.cs" />
