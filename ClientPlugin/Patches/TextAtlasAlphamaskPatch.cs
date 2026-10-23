@@ -121,7 +121,12 @@ public static class TextAtlasAlphamaskPatch
             var output = CreateDistanceDds(inside, size, gameLevels);
 
             var outputPath = Path.Combine(Common.DataDir, AtlasName);
-            if (!File.Exists(outputPath) || !File.ReadAllBytes(outputPath).SequenceEqual(output))
+            // Called as Enumerable.SequenceEqual on purpose: under Wine Mono the span overload of
+            // MemoryExtensions exists twice (mscorlib and System.Memory), which fails with CS0121.
+            if (
+                !File.Exists(outputPath)
+                || !Enumerable.SequenceEqual(File.ReadAllBytes(outputPath), output)
+            )
             {
                 Directory.CreateDirectory(Common.DataDir);
                 File.WriteAllBytes(outputPath, output);
