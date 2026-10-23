@@ -115,10 +115,12 @@ In game, with the rig of [SE-628](https://tasks.cometworks.se/tasks/1466):
   write, and VRage.Math's own `MatrixD.CreateFromDir`, see the original values. The log
   names the mod file and line and the block. Without Bugfixes, the same run shows every
   write in the next script and in `CreateFromDir`.
+- Pulsar 2.4.1 Legacy under Proton (Wine Mono 6.13), same mod, block and checks: the same
+  results, and every write leaking when Bugfixes isn't loaded.
 - Magnetar dedicated server: the same block writes, saved through autosave, show the
   block's own copies changed while `MatrixD.CreateFromDir` and `GetOrientation` on the
   server still see the original `Vector3D.Zero` and `MatrixD.Identity`. Before the fix
   `CreateFromDir` returned the block's `(1, 0, 0)` there. The server refuses local mods, so
   mods were only tested on the client; they go through the same compile path.
 
-Not tested on Windows.
+Not tested on Windows yet.
