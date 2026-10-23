@@ -28,11 +28,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ModFileHandlesPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\RadiationStatClosedCharacterPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\ScriptCompilerNamePatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ThrustOverrideMultiplierPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\VoxelClipmapWaitSetPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\WorldSavePathPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\Common.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\ICommonPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rewriter\MathStaticsRewriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rewriter\StructMutation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\CodeChange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\EnsureCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\GameAssembliesToPublicize.cs" />

@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>14</LangVersion>
+        <Nullable>disable</Nullable>
+        <RootNamespace>VRageMathStaticsTests</RootNamespace>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <!-- Standalone harness: not part of Bugfixes.sln. The Directory.Build.props next to
+             this file shadows the repository root's, keeping the plugin's game path detection
+             out of the test build. -->
+        <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+        <!-- Folder containing the game's VRage.Math.dll, override with -p:Bin64=... -->
+        <Bin64 Condition="'$(Bin64)' == ''">$(HOME)/.steam/steam/steamapps/common/SpaceEngineers/Bin64</Bin64>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- The Roslyn version the game ships in Bin64. -->
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.9.0" />
+        <Reference Include="VRage.Math" HintPath="$(Bin64)/VRage.Math.dll" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The code under test, compiled verbatim from the plugin sources. -->
+        <Compile Include="../../Shared/Rewriter/MathStaticsRewriter.cs" Link="MathStaticsRewriter.cs" />
+        <Compile Include="../../Shared/Rewriter/StructMutation.cs" Link="StructMutation.cs" />
+        <Compile Include="../../Shared/Logging/IPluginLogger.cs" Link="IPluginLogger.cs" />
+        <Compile Include="Stubs.cs" />
+        <Compile Include="Program.cs" />
+    </ItemGroup>
+
+</Project>

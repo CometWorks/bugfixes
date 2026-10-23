@@ -2,13 +2,16 @@
 using System.IO;
 using System.Threading;
 using HarmonyLib;
+using Microsoft.CodeAnalysis.CSharp;
 using Shared.Config;
 using Shared.Logging;
 using Shared.Patches;
 using Shared.Plugin;
+using Shared.Rewriter;
 using VRage.FileSystem;
 using VRage.Game;
 using VRage.Plugins;
+using VRage.Scripting;
 
 // Define assembly version when compiled by Pulsar
 #if !LOCAL_BUILD
@@ -34,6 +37,12 @@ public class Plugin : IPlugin, ICommonPlugin
     public IPluginConfig Config => config?.Data;
     private PersistentConfig<PluginConfig> config;
     private static readonly string ConfigFileName = $"{Name}.cfg";
+
+    // Called by Pulsar and Magnetar for every script and mod compilation, before the game's own
+    // rewriters and the whitelist check
+    // ReSharper disable once UnusedMember.Global
+    public static CSharpCompilation Rewrite(CSharpCompilation compilation, MyApiTarget target) =>
+        MathStaticsRewriter.Rewrite(compilation, target, Logger);
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     public void Init(object gameInstance)
