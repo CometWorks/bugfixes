@@ -1,19 +1,21 @@
 <?xml version="1.0"?>
-<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+<PluginData
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:type="GitHubPlugin"
+>
+  <Id>bugfixes</Id>
+  <RepoId>CometWorks/bugfixes</RepoId>
+  <FriendlyName>Bugfixes</FriendlyName>
+  <Author>CometWorks</Author>
 
-    <Id>bugfixes</Id>
-    <RepoId>CometWorks/bugfixes</RepoId>
-    <FriendlyName>Bugfixes</FriendlyName>
-    <Author>CometWorks</Author>
+  <Tooltip>Fixes long-standing bugs may never be fixed in the game client</Tooltip>
+  <Description>See the README on GitHub</Description>
 
-    <Tooltip>Fixes long-standing bugs may never be fixed in the game client</Tooltip>
-    <Description>See the README on GitHub</Description>
+  <SourceDirectories>
+    <Directory>ClientPlugin</Directory>
+    <Directory>Shared</Directory>
+  </SourceDirectories>
 
-    <SourceDirectories>
-        <Directory>ClientPlugin</Directory>
-        <Directory>Shared</Directory>
-    </SourceDirectories>
-
-    <Commit>TODO</Commit>
-
+  <Commit>TODO</Commit>
 </PluginData>
