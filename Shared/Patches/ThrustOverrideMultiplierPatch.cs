@@ -35,8 +35,13 @@ namespace Shared.Patches;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class ThrustOverrideMultiplierPatch
 {
-    private static readonly AccessTools.FieldRef<MyThrust, Sync<float, SyncDirection.BothWays>> ThrustOverridePercent =
-        AccessTools.FieldRefAccess<MyThrust, Sync<float, SyncDirection.BothWays>>("m_thrustOverride");
+    private static readonly AccessTools.FieldRef<
+        MyThrust,
+        Sync<float, SyncDirection.BothWays>
+    > ThrustOverridePercent = AccessTools.FieldRefAccess<
+        MyThrust,
+        Sync<float, SyncDirection.BothWays>
+    >("m_thrustOverride");
 
     private static void Postfix(MyThrust __instance, MyObjectBuilder_CubeBlock __result)
     {
@@ -46,6 +51,9 @@ public static class ThrustOverrideMultiplierPatch
         if (((Sandbox.ModAPI.IMyThrust)__instance).ThrustMultiplier == 1f)
             return;
 
-        builder.ThrustOverride = (float)ThrustOverridePercent(__instance) * __instance.BlockDefinition.ForceMagnitude * 0.01f;
+        builder.ThrustOverride =
+            (float)ThrustOverridePercent(__instance)
+            * __instance.BlockDefinition.ForceMagnitude
+            * 0.01f;
     }
 }
