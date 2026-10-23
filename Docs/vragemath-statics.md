@@ -68,6 +68,11 @@ Bugfixes: PB 111703061066241592 may change the shared VRageMath.Vector3D.Zero, i
 The name is the one the game compiles the script under, `PB: <block name> (<entity id>)`
 for a programmable block. Blocks compiled while the world loads, before the plugin's
 `Init` runs, are named by their entity id only.
+A compilation logs at most 20 such lines, then one line with the number of the rest.
+
+Gated on `Config.Enabled` like the other patches. Compilations during the first world
+load can come before `Init` loads the config, so those are rewritten even with
+`Enabled` off.
 
 Limits:
 
@@ -80,7 +85,7 @@ Limits:
 
 ## Testing
 
-On Linux, game 1.210.014, Pulsar Interim and Magnetar.
+On Linux, game 1.210.014, Pulsar 2.4.3 (Interim) and Magnetar 2.4.2.
 
 `tests/vragemath-statics` compiles small scripts against the game's `VRage.Math.dll` with
 the Roslyn version the game ships, runs the rewriter, and runs the result:

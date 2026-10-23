@@ -31,7 +31,8 @@ namespace Shared.Rewriter;
 // A use may write when it is assigned, incremented or decremented, passed by ref or out, taken
 // by ref, deconstructed into, or has a member of it written. Calling a method, property or
 // indexer on a struct field passes the field by address, so that counts as a write unless the
-// IL of all members of that name shows they never change `this` (StructMutation).
+// IL of that overload shows it never changes `this` (StructMutation). Each possible write is
+// logged, up to MaxLoggedWrites per compilation.
 public static class MathStaticsRewriter
 {
     public const string HolderName = "__BugfixesVRageMathStatics";

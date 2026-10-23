@@ -16,8 +16,8 @@ using VRage.Scripting;
 #if !LOCAL_BUILD
 using System.Reflection;
 
-[assembly: AssemblyVersion("1.13.1.0")]
-[assembly: AssemblyFileVersion("1.13.1.0")]
+[assembly: AssemblyVersion("1.14.0.0")]
+[assembly: AssemblyFileVersion("1.14.0.0")]
 
 #endif
 
@@ -38,11 +38,14 @@ public class Plugin : IPlugin, ICommonPlugin
     private PersistentConfig<PluginConfig> config;
     private static readonly string ConfigFileName = $"{Name}.cfg";
 
-    // Called by Pulsar and Magnetar for every script and mod compilation, before the game's own
-    // rewriters and the whitelist check
+    // Called by Pulsar for every script and mod compilation, before the game's own rewriters
+    // and the whitelist check. Compilations during the first world load can come before Init
+    // loads the config, so a missing config counts as enabled.
     // ReSharper disable once UnusedMember.Global
     public static CSharpCompilation Rewrite(CSharpCompilation compilation, MyApiTarget target) =>
-        MathStaticsRewriter.Rewrite(compilation, target, Logger);
+        Common.Config?.Enabled == false
+            ? compilation
+            : MathStaticsRewriter.Rewrite(compilation, target, Logger);
 
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.NoInlining
