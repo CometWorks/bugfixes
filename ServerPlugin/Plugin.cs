@@ -2,20 +2,23 @@
 using System.IO;
 using System.Threading;
 using HarmonyLib;
+using Microsoft.CodeAnalysis.CSharp;
 using Shared.Config;
 using Shared.Logging;
 using Shared.Patches;
 using Shared.Plugin;
+using Shared.Rewriter;
 using VRage.FileSystem;
 using VRage.Game;
 using VRage.Plugins;
-
+using VRage.Scripting;
 // Define assembly version when compiled by Magnetar
 #if !LOCAL_BUILD
 using System.Reflection;
 
-[assembly: AssemblyVersion("1.13.1.0")]
-[assembly: AssemblyFileVersion("1.13.1.0")]
+[assembly: AssemblyVersion("1.14.0.0")]
+[assembly: AssemblyFileVersion("1.14.0.0")]
+
 #endif
 
 namespace ServerPlugin;
@@ -36,7 +39,39 @@ public class Plugin : IPlugin, ICommonPlugin
     private PersistentConfig<PluginConfig> config;
     private static readonly string ConfigFileName = $"{Name}.cfg";
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    // Called by Magnetar for every script and mod compilation, before the game's own rewriters
+    // and the whitelist check
+    // ReSharper disable once UnusedMember.Global
+    public static CSharpCompilation Rewrite(CSharpCompilation compilation, MyApiTarget target)
+    {
+        var current = Common.Config ?? ConfigBeforeInit();
+        if (!current.Enabled || !current.IsolateMathStatics)
+            return compilation;
+
+        return MathStaticsRewriter.Rewrite(compilation, target, Logger);
+    }
+
+    // Scripts of the first world can be compiled before Init loads the config, on a dedicated
+    // server always. Read the file as it is then, or take the defaults.
+    private static IPluginConfig configBeforeInit;
+
+    private static IPluginConfig ConfigBeforeInit()
+    {
+        if (configBeforeInit != null)
+            return configBeforeInit;
+
+        PluginConfig file = null;
+        if (MyFileSystem.UserDataPath != null)
+            file = PersistentConfig<PluginConfig>.Peek(
+                Path.Combine(MyFileSystem.UserDataPath, ConfigFileName)
+            );
+
+        return configBeforeInit = file ?? new PluginConfig();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.NoInlining
+    )]
     public void Init(object gameInstance)
     {
 #if DEBUG
@@ -82,11 +117,11 @@ public class Plugin : IPlugin, ICommonPlugin
     {
         if (failed)
             return;
-        
+
 #if DEBUG
         CustomUpdate();
         Tick++;
-#else        
+#else
         try
         {
             CustomUpdate();
@@ -97,7 +132,7 @@ public class Plugin : IPlugin, ICommonPlugin
             Log.Critical(e, "Update failed");
             failed = true;
         }
-#endif       
+#endif
     }
 
     private void CustomUpdate()

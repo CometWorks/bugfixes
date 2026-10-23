@@ -39,8 +39,10 @@ namespace ClientPlugin.Patches;
 // distributor appears; the game recomputes it on the next update.
 //
 // ReSharper disable once UnusedType.Global
-[HarmonyPatch(typeof(MyStatControlledEntityEnergyEstimatedTimeRemaining),
-    nameof(MyStatControlledEntityEnergyEstimatedTimeRemaining.Update))]
+[HarmonyPatch(
+    typeof(MyStatControlledEntityEnergyEstimatedTimeRemaining),
+    nameof(MyStatControlledEntityEnergyEstimatedTimeRemaining.Update)
+)]
 [HarmonyPatchCategory("Client")]
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]

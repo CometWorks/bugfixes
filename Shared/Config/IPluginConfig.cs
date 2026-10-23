@@ -13,5 +13,10 @@ public interface IPluginConfig : INotifyPropertyChanged
     // See Docs/world-save-path.md.
     bool WorldStorageInWorldFolder { get; set; }
 
+    // Gives each programmable block script and mod its own copy of the VRage.Math static fields
+    // it may write, like Vector3D.Zero, instead of letting it change them for the whole game.
+    // On by default. See Docs/vragemath-statics.md.
+    bool IsolateMathStatics { get; set; }
+
     // TODO: Add config properties here, then extend the implementing classes accordingly, also add UI to ConfigView.xaml
 }

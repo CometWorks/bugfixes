@@ -49,6 +49,7 @@ None yet.
 - [Conveyor sorters failing to load when a mod adds sorter controls early](Docs/conveyor-sorter-controls.md)
 - [Crash after a clipboard or projector preview grid fails to load](Docs/clipboard-preview-failed-grid.md)
 - [Crash when radiation damage is queued for a character that then leaves the world](Docs/radiation-stat-closed-character.md)
+- [Programmable block scripts and mods changing VRage.Math constants like `Vector3D.Zero` for the whole game](Docs/vragemath-statics.md) (on by default, can be turned off)
 - [Thruster override multiplied on every save and load when a mod sets the thrust multiplier](Docs/thrust-override-multiplier.md)
 - [Crash when a pilot leaves a fast ship out of relative dampening range](Docs/cockpit-exit-dampening.md)
 

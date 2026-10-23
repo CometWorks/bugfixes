@@ -29,6 +29,7 @@ public class PluginConfig : IPluginConfig
 
     private bool enabled = true;
     private bool worldStorageInWorldFolder;
+    private bool isolateMathStatics = true;
 
     // TODO: Implement your config fields here
     // The default values here will apply to Client and Dedicated.
@@ -44,6 +45,12 @@ public class PluginConfig : IPluginConfig
     {
         get => worldStorageInWorldFolder;
         set => SetValue(ref worldStorageInWorldFolder, value);
+    }
+
+    public bool IsolateMathStatics
+    {
+        get => isolateMathStatics;
+        set => SetValue(ref isolateMathStatics, value);
     }
 
     // TODO: Encapsulate your config fields as properties here
