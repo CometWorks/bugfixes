@@ -51,6 +51,24 @@ public class PersistentConfig<T> : IDisposable
 
     private void OnPropertyChanged(object sender, PropertyChangedEventArgs e) => SaveLater();
 
+    // Reads the file without writing, moving or watching it, for code that runs before Init loads
+    // the config. Null if the file is missing or can't be read.
+    public static T Peek(string path)
+    {
+        try
+        {
+            if (!File.Exists(path))
+                return null;
+
+            using (var streamReader = File.OpenText(path))
+                return (T)new XmlSerializer(typeof(T)).Deserialize(streamReader);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     public static PersistentConfig<T> Load(IPluginLogger log, string path)
     {
         try

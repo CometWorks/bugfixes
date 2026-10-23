@@ -3,6 +3,7 @@
 **Category:** Client + Server
 **Code:** `Shared/Rewriter/MathStaticsRewriter.cs`, `Shared/Rewriter/StructMutation.cs`,
 `Shared/Patches/ScriptCompilerNamePatch.cs`, `Rewrite` in both `Plugin.cs`
+**Setting:** `IsolateMathStatics` in `Bugfixes.cfg`, on by default
 
 ## The bug
 
@@ -70,9 +71,22 @@ for a programmable block. Blocks compiled while the world loads, before the plug
 `Init` runs, are named by their entity id only.
 A compilation logs at most 20 such lines, then one line with the number of the rest.
 
-Gated on `Config.Enabled` like the other patches. Compilations during the first world
-load can come before `Init` loads the config, so those are rewritten even with
-`Enabled` off.
+On by default. To turn it off, set `IsolateMathStatics` to `false` in `Bugfixes.cfg` and
+restart the game or the server. The file is in the game's user data folder on a client
+(`%AppData%\SpaceEngineers` on Windows) and in the server's data folder (the `-path` of a
+Magnetar server). A file written by an older Bugfixes has no such line, which means on.
+
+```xml
+<PluginConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Enabled>true</Enabled>
+  <WorldStorageInWorldFolder>false</WorldStorageInWorldFolder>
+  <IsolateMathStatics>false</IsolateMathStatics>
+</PluginConfig>
+```
+
+`Enabled` set to `false` turns it off too, like the other fixes. The scripts of the first
+world can be compiled before the plugin's `Init` loads the config, always so on a dedicated
+server, so `Rewrite` reads `Bugfixes.cfg` itself until then.
 
 Limits:
 
@@ -122,5 +136,10 @@ In game, with the rig of [SE-628](https://tasks.cometworks.se/tasks/1466):
   server still see the original `Vector3D.Zero` and `MatrixD.Identity`. Before the fix
   `CreateFromDir` returned the block's `(1, 0, 0)` there. The server refuses local mods, so
   mods were only tested on the client; they go through the same compile path.
+
+- `IsolateMathStatics`: with the line missing, the client run above passes; with `false`,
+  every write leaks and nothing is logged, as without Bugfixes. On Magnetar, where the
+  block compiles before `Init`, `false` read from `Bugfixes.cfg` leaves the block's writes
+  leaking into `CreateFromDir`, and `true` keeps them in the block.
 
 Not tested on Windows yet.
