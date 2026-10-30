@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ModFileHandlesPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\RadiationStatClosedCharacterPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\SoundBlockEmitterPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ScriptCompilerNamePatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ThrustOverrideMultiplierPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\VoxelClipmapWaitSetPatch.cs" />
