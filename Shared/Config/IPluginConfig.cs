@@ -18,5 +18,9 @@ public interface IPluginConfig : INotifyPropertyChanged
     // On by default. See Docs/vragemath-statics.md.
     bool IsolateMathStatics { get; set; }
 
+    // Of the ships joined by a locked connector and not being flown, only the strongest keeps its
+    // dampeners and gyros slowing the group down. On by default. See Docs/connected-ships.md.
+    bool CalmConnectedShips { get; set; }
+
     // TODO: Add config properties here, then extend the implementing classes accordingly, also add UI to ConfigView.xaml
 }

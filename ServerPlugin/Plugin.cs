@@ -16,8 +16,8 @@ using VRage.Scripting;
 #if !LOCAL_BUILD
 using System.Reflection;
 
-[assembly: AssemblyVersion("1.15.0.0")]
-[assembly: AssemblyFileVersion("1.15.0.0")]
+[assembly: AssemblyVersion("1.16.0.0")]
+[assembly: AssemblyFileVersion("1.16.0.0")]
 
 #endif
 
@@ -139,5 +139,6 @@ public class Plugin : IPlugin, ICommonPlugin
     {
         // TODO: Put your update code here. It is called on every simulation frame!
         PatchHelpers.PatchUpdates();
+        ConnectedShipsPatch.Update(Tick);
     }
 }

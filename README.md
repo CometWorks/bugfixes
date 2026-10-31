@@ -53,6 +53,7 @@ None yet.
 - [Thruster override multiplied on every save and load when a mod sets the thrust multiplier](Docs/thrust-override-multiplier.md)
 - [Crash when a pilot leaves a fast ship out of relative dampening range](Docs/cockpit-exit-dampening.md)
 - [Crash when a sound block saved with a looping sound playing gets power on a server](Docs/sound-block-emitter.md)
+- [Connected ships pushing against each other](Docs/connected-ships.md) (on by default, can be turned off)
 
 ## Legal
 

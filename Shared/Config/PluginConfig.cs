@@ -30,6 +30,7 @@ public class PluginConfig : IPluginConfig
     private bool enabled = true;
     private bool worldStorageInWorldFolder;
     private bool isolateMathStatics = true;
+    private bool calmConnectedShips = true;
 
     // TODO: Implement your config fields here
     // The default values here will apply to Client and Dedicated.
@@ -51,6 +52,12 @@ public class PluginConfig : IPluginConfig
     {
         get => isolateMathStatics;
         set => SetValue(ref isolateMathStatics, value);
+    }
+
+    public bool CalmConnectedShips
+    {
+        get => calmConnectedShips;
+        set => SetValue(ref calmConnectedShips, value);
     }
 
     // TODO: Encapsulate your config fields as properties here
