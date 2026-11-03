@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LaserAntennaRepairWeldPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LoadCameraEntityIdZeroPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ModFileHandlesPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\ModWithoutDataFolderPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\RadiationStatClosedCharacterPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\SoundBlockEmitterPatch.cs" />
