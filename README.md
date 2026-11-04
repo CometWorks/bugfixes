@@ -29,6 +29,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 - [Blocks of a moving ship drawn one step behind for a frame](Docs/actor-world-matrix-index.md)
 - [Caret in the wrong place after pasting several lines](Docs/multiline-paste-caret.md)
 - [Jagged edges on block label text seen close up](Docs/text-atlas-edges.md)
+- [Seat interior drawn over the outside of a cockpit or cryo chamber after its grid is hidden and shown](Docs/cockpit-interior-visibility.md)
 
 ### Server only
 
