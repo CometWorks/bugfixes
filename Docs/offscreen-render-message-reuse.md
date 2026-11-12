@@ -2,6 +2,7 @@
 
 **Category:** Client only
 **Patch:** `ClientPlugin/Patches/OffscreenRenderMessageReusePatch.cs`
+**Pull request:** [#43](https://github.com/CometWorks/bugfixes/pull/43)
 **Reported in:** SE-1377 (CometWorks tickets)
 
 ## The bug
