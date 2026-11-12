@@ -32,8 +32,6 @@ namespace Shared.Patches;
 //
 // The transpiler makes the list take over the children (TakeOwnership), as the game does
 // elsewhere for freshly made child shapes, and releases the shape on the wheel return.
-// Multigrid Projector fixes the policy too: whichever plugin patches first changes the policy
-// argument, the other one finds it changed and leaves it.
 //
 // ReSharper disable once UnusedType.Global
 [HarmonyPatch]
@@ -80,11 +78,7 @@ public static class PlacementTestShapeLeakPatch
                     i => i.opcode == OpCodes.Newobj && Equals(i.operand, listShape)
                 );
         var policy = ctor < 1 ? null : il[ctor - 1];
-        if (policy == null)
-            Common.Logger.Warning(
-                "PlacementTestShapeLeakPatch: no list shape after AddConvexShape in MyCubeGrid.TestBlockPlacementArea"
-            );
-        else if (policy.opcode == OpCodes.Ldc_I4_1)
+        if (policy?.opcode == OpCodes.Ldc_I4_1)
         {
             policy.opcode = OpCodes.Call;
             policy.operand = AccessTools.Method(
@@ -93,11 +87,14 @@ public static class PlacementTestShapeLeakPatch
             );
         }
         else
-            Common.Logger.Info(
-                "PlacementTestShapeLeakPatch: another plugin fixed the list shape policy already"
+            Common.Logger.Warning(
+                "PlacementTestShapeLeakPatch: no list shape with HkReferencePolicy.None after AddConvexShape in MyCubeGrid.TestBlockPlacementArea"
             );
 
-        var wheelCalls = il.Where(i => i.Calls(IntersectsWithWheelMethod)).ToList();
+        List<CodeInstruction> wheelCalls =
+            IntersectsWithWheelMethod == null
+                ? []
+                : il.Where(i => i.Calls(IntersectsWithWheelMethod)).ToList();
         foreach (var call in wheelCalls)
             call.operand = AccessTools.Method(
                 typeof(PlacementTestShapeLeakPatch),
@@ -126,8 +123,11 @@ public static class PlacementTestShapeLeakPatch
         "IntersectsWithWheel"
     );
 
+    // Null when the game has no such method anymore; then nothing calls the replacement either
     private static readonly IntersectsWithWheelDelegate OriginalIntersectsWithWheel =
-        AccessTools.MethodDelegate<IntersectsWithWheelDelegate>(IntersectsWithWheelMethod);
+        IntersectsWithWheelMethod == null
+            ? null
+            : AccessTools.MethodDelegate<IntersectsWithWheelDelegate>(IntersectsWithWheelMethod);
 
     private static HkReferencePolicy ConvexChildrenPolicy() =>
         Common.Config?.Enabled == true ? HkReferencePolicy.TakeOwnership : HkReferencePolicy.None;

@@ -32,9 +32,6 @@ A transpiler on that overload:
   children go away with the list;
 - releases the shape when `IntersectsWithWheel` returns true, before the early return.
 
-Multigrid Projector 1.0.1 fixes the policy too, for players without Bugfixes. Whichever plugin
-patches first changes the argument; the other one finds it changed and leaves it.
-
 ## Testing
 
 Linux, game 1.210.014, 2026-11-12, with Multigrid Projector's `tests/ds/test_havok_leak_ds.py`: a
