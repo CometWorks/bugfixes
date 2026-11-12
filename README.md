@@ -56,6 +56,7 @@ None yet.
 - [Crash when a pilot leaves a fast ship out of relative dampening range](Docs/cockpit-exit-dampening.md)
 - [Crash when a sound block saved with a looping sound playing gets power on a server](Docs/sound-block-emitter.md)
 - [Mods without a Data folder reported as failed to load](Docs/mod-without-data-folder.md)
+- [Havok memory leaking from the block placement test, near projections and wheels](Docs/placement-test-shape-leak.md)
 
 ## Legal
 
