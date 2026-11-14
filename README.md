@@ -59,6 +59,7 @@ None yet.
 - [Havok memory leaking from the block placement test, near projections and wheels](Docs/placement-test-shape-leak.md)
 - [Crash when an event controller's block selection lists a block twice](Docs/event-controller-selected-blocks.md)
 - [Crash when a grid with a merge block whose model has no merge field is added to the world](Docs/merge-block-physics.md)
+- [Crash inside Havok when a physics cluster reorder removes a rigid body that is not in the world](Docs/havok-batch-removal.md)
 
 ## Legal
 

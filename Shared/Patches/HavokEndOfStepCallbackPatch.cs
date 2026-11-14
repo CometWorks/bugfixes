@@ -284,7 +284,7 @@ public static class HavokEndOfStepCallbackPatch
         return records;
     }
 
-    private static unsafe IntPtr ReadWorld(IntPtr body)
+    internal static unsafe IntPtr ReadWorld(IntPtr body)
     {
         if (worldOffset < 0)
         {

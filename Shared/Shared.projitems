@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Patches\DebrisEntityIdPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EmptyStockpilePastePatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EventControllerSelectedBlocksPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\HavokBatchRemovalPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\HavokEndOfStepCallbackPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LaserAntennaRepairWeldPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LoadCameraEntityIdZeroPatch.cs" />
