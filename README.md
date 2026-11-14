@@ -58,6 +58,7 @@ None yet.
 - [Mods without a Data folder reported as failed to load](Docs/mod-without-data-folder.md)
 - [Havok memory leaking from the block placement test, near projections and wheels](Docs/placement-test-shape-leak.md)
 - [Crash when an event controller's block selection lists a block twice](Docs/event-controller-selected-blocks.md)
+- [Crash when a grid with a merge block whose model has no merge field is added to the world](Docs/merge-block-physics.md)
 
 ## Legal
 
