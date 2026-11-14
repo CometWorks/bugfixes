@@ -86,7 +86,11 @@ Magnetar server). A file written by an older Bugfixes has no such line, which me
 
 `Enabled` set to `false` turns it off too, like the other fixes. The scripts of the first
 world can be compiled before the plugin's `Init` loads the config, always so on a dedicated
-server, so `Rewrite` reads `Bugfixes.cfg` itself until then.
+server, so `Rewrite` reads `Bugfixes.cfg` itself until then. A compilation can even come
+before the game has set up its folders (`MyFileSystem`), as on a Quasar-managed Magnetar
+server ([#41](https://github.com/CometWorks/bugfixes/issues/41)). The server plugin then
+takes the folder from the `-path` argument, the one the game is about to use, or the
+defaults without remembering them if there is none.
 
 Limits:
 
@@ -119,6 +123,16 @@ write without the rewriter and sees it reach the real field. A cross-check calls
 VRage.Math method the IL scan judges harmless on every static value of its type (2466
 calls) and checks that none changed it; the same check over the methods judged changing
 finds 292 that did, so it would notice a miss.
+
+`tests/rewriter-before-init` loads the built server plugin with the dedicated server's
+assemblies and calls `Rewrite` while `MyFileSystem` is not initialized, once without and
+once with a `-path` folder whose `Bugfixes.cfg` turns `IsolateMathStatics` off:
+
+```
+dotnet run -c Release --project tests/rewriter-before-init [-- <Bugfixes.dll> <DedicatedServer64>]
+```
+
+Bugfixes 1.19.0 fails it with the exception of #41.
 
 In game, with the rig of [SE-628](https://tasks.cometworks.se/tasks/1466):
 

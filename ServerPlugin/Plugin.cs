@@ -60,13 +60,25 @@ public class Plugin : IPlugin, ICommonPlugin
         if (configBeforeInit != null)
             return configBeforeInit;
 
-        PluginConfig file = null;
-        if (MyFileSystem.UserDataPath != null)
-            file = PersistentConfig<PluginConfig>.Peek(
-                Path.Combine(MyFileSystem.UserDataPath, ConfigFileName)
-            );
+        var userDataPath = UserDataPathBeforeInit();
+        if (userDataPath == null)
+            return new PluginConfig();
 
+        var file = PersistentConfig<PluginConfig>.Peek(Path.Combine(userDataPath, ConfigFileName));
         return configBeforeInit = file ?? new PluginConfig();
+    }
+
+    // MyFileSystem is set up by MyInitializer.InvokeBeforeRun, and its getters throw before that.
+    // A compilation can come earlier than that, so take the folder from the server's -path
+    // argument then, the one InvokeBeforeRun is going to use.
+    private static string UserDataPathBeforeInit()
+    {
+        if (MyFileSystem.IsInitialized)
+            return MyFileSystem.UserDataPath;
+
+        var args = Environment.GetCommandLineArgs();
+        var i = Array.IndexOf(args, "-path");
+        return i >= 0 && i + 1 < args.Length ? args[i + 1].Trim('"') : null;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(
