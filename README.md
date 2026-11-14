@@ -49,6 +49,7 @@ None yet.
 - [Files a mod left open staying locked after the world unloads](Docs/mod-file-handles.md)
 - [Crash when a rocket hits a character whose identity was removed](Docs/character-missile-identity.md)
 - [Conveyor sorters failing to load when a mod adds sorter controls early](Docs/conveyor-sorter-controls.md)
+- [Blocks missing their own terminal controls and actions when a mod adds controls early](Docs/early-mod-terminal-controls.md)
 - [Crash after a clipboard or projector preview grid fails to load](Docs/clipboard-preview-failed-grid.md)
 - [Crash when radiation damage is queued for a character that then leaves the world](Docs/radiation-stat-closed-character.md)
 - [Programmable block scripts and mods changing VRage.Math constants like `Vector3D.Zero` for the whole game](Docs/vragemath-statics.md) (on by default, can be turned off)
