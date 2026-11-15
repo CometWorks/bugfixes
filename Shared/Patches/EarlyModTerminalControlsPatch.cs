@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Gui;
+using Sandbox.Game.World;
 using Shared.Plugin;
 using VRage.Collections;
 
@@ -119,8 +120,7 @@ public static class EarlyModTerminalControlsPatch
     private static void CreateTerminalControls(MyTerminalBlock block)
     {
         if (
-            Common.Config?.Enabled != true
-            || block == null
+            block == null
             || ControlsDict == null
             || GetListMethod == null
             || ControlsField == null
@@ -130,11 +130,6 @@ public static class EarlyModTerminalControlsPatch
             CreateBlockTerminalControls(block);
             return;
         }
-
-        // MyTerminalControlFactory.Unload is tiny and gets inlined into MySession.Unload.
-        // Detect session unload by checking whether MyTerminalBlock is absent from m_controls.
-        if (InitializedTypes.Count > 0 && !ControlsDict.Contains(typeof(MyTerminalBlock)))
-            InitializedTypes.Clear();
 
         var concreteType = block.GetType();
         if (InitializedTypes.Contains(concreteType))
@@ -154,9 +149,20 @@ public static class EarlyModTerminalControlsPatch
                 chain.Add(t);
         }
 
-        if (chain.Count == 0)
+        // Always record the chain even when the plugin is disabled, so enabling it mid-session
+        // does not re-create vanilla base controls on the next block type and duplicate them.
+        if (chain.Count == 0 || Common.Config?.Enabled != true)
         {
-            CreateBlockTerminalControls(block);
+            try
+            {
+                CreateBlockTerminalControls(block);
+            }
+            finally
+            {
+                foreach (var t in chain)
+                    InitializedTypes.Add(t);
+            }
+
             return;
         }
 
@@ -247,10 +253,17 @@ public static class EarlyModTerminalControlsPatch
 
                     foreach (DictionaryEntry entry in ControlsDict)
                     {
+                        // MyRadioAntenna.CreateTerminalControls removes the MyTerminalBlock base
+                        // controls with RemoveBaseClass<MyRadioAntenna, MyTerminalBlock> and adds
+                        // its own replacements.
                         if (
                             entry.Key is Type subType
                             && subType != item.BlockType
                             && item.BlockType.IsAssignableFrom(subType)
+                            && !(
+                                item.BlockType == typeof(MyTerminalBlock)
+                                && typeof(MyRadioAntenna).IsAssignableFrom(subType)
+                            )
                         )
                             AppendModItems(entry.Value, item.Controls, item.Actions);
                     }
@@ -291,6 +304,15 @@ public static class EarlyModTerminalControlsPatch
         {
             foreach (var a in actions)
                 targetActions.Add(a);
+        }
+    }
+
+    [HarmonyPatch(typeof(MySession), nameof(MySession.Unload))]
+    private static class SessionUnloadPatch
+    {
+        private static void Postfix()
+        {
+            InitializedTypes.Clear();
         }
     }
 }

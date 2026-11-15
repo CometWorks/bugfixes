@@ -61,8 +61,9 @@ for the rest of the session.
 
 A transpiler on `MyTerminalBlock.BeforeGameLogicInit` routes its
 `CreateTerminalControls` call (inside `m_createControlsLock`) through a helper
-that tracks which block types have actually executed their own
-`CreateTerminalControls` in the current session:
+that tracks which block types have executed their own `CreateTerminalControls`
+in the current session, and a postfix on `MySession.Unload` clears that set when
+the world unloads:
 
 1. For each uninitialized class in the block's inheritance chain from
    `MyTerminalBlock` down to the concrete block type, if `m_controls` already
@@ -73,27 +74,43 @@ that tracks which block types have actually executed their own
    actions (and populate any static control fields such as those on
    `MyConveyorSorter`).
 3. The stashed mod controls and actions are then appended back onto each class
-   and any already-initialized subclasses in `m_controls`.
+   and any already-initialized subclasses in `m_controls` (skipping
+   `MyRadioAntenna` when propagating `MyTerminalBlock` controls, since
+   `MyRadioAntenna.CreateTerminalControls` removes `MyTerminalBlock` controls
+   with `RemoveBaseClass<MyRadioAntenna, MyTerminalBlock>`).
+4. Even when the plugin is disabled, the initialized inheritance chain is still
+   recorded so enabling the plugin mid-session does not re-create and duplicate
+   base controls on subsequent block types.
 
 ## Testing
 
-Tested on Windows (game 1.210.014, Pulsar Legacy):
+On Windows (game 1.210.014, Pulsar 2.4.3 Legacy), with a test session component
+that calls `MyAPIGateway.TerminalControls.GetControls<IMyTerminalBlock>` and
+`GetControls<IMyTimerBlock>` in `LoadData` before any world entities load, and
+then initializes a `MyTimerBlock`:
 
-- Unit harness loading `Sandbox.Game.dll`, `SpaceEngineers.Game.dll` and
-  `0Harmony.dll`: simulated mods calling `MyTerminalControlFactory.AddControl`
-  on `MyTerminalBlock`, `MyFunctionalBlock` and `MyConveyorSorter` before any
-  block entity initialized. Verified that without the patch `MyTerminalBlock`
-  had only the single mod control (missing all 6 vanilla controls including
-  `Name` and `CustomData`), `MyFunctionalBlock` missed `OnOff`, and
-  `MyConveyorSorter.drainAll` stayed `null`. With the patch applied,
-  `MyTerminalBlock` created all 6 vanilla controls plus the mod control (7
-  total), `MyFunctionalBlock` created `OnOff` plus all inherited and mod
-  controls (9 total), and `MyConveyorSorter` populated its static `drainAll`
-  control and merged all inherited and sorter-specific mod controls.
-- Verified session unload reset when `MyTerminalControlFactory.Unload()` clears
-  `m_controls`.
-- Verified in a multiplayer world with 39 Workshop mods where multiple mods
-  (`Alarm Beacon`, `Work From Home`, `Lighted Conveyor Tubes`, `Gas Purge Valve`,
-  `Atlas Mapping System`, `Dock & Charge`, `Ground Truth`) register controls on
-  `IMyTerminalBlock` and concrete block interfaces during `BeforeStart` before
-  entities stream in on joining clients.
+- With Bugfixes disabled, after the timer block initializes, `IMyTimerBlock` has
+  0 controls and 0 actions (and `IMyTerminalBlock` has 0 controls and 0 actions).
+- With the fix enabled, after the timer block initializes on the first world
+  load, `IMyTimerBlock` has all 34 vanilla controls (`OnOff`, separator,
+  `ShowInTerminal`, `ShowInInventory`, `ShowInToolbarConfig`, `Name`,
+  `ShowOnHUD`, `CustomData`, the 20 multi-panel LCD controls from
+  `MyFunctionalBlock`, `Silent`, `TriggerDelay`, `OpenToolbar`, `TriggerNow`,
+  `Start`, `Stop`) and all 19 vanilla actions, and `IMyTerminalBlock` has all 6
+  vanilla controls and 3 vanilla actions.
+- After exiting to the menu (`MySession.Unload`) and loading the world a second
+  time in the same process (with `LoadData` again touching `IMyTerminalBlock`
+  and `IMyTimerBlock` before any block entity loads), `SessionUnloadPatch`
+  clears `InitializedTypes` and the timer block again has all 34 controls and 19
+  actions (and `IMyTerminalBlock` has all 6 controls and 3 actions).
+- Toggling `Enabled` from `false` to `true` mid-session after one block type has
+  initialized and before a sibling block type initializes preserves the 6
+  `MyTerminalBlock` controls without duplicating them.
+- Also tested in a live multiplayer session on a world with 39 Workshop mods
+  where multiple mods (`Alarm Beacon`, `Work From Home`, `Lighted Conveyor Tubes`,
+  `Gas Purge Valve`, `Atlas Mapping System`, `Dock & Charge`, `Ground Truth`)
+  access `MyAPIGateway.TerminalControls` on `IMyTerminalBlock` and concrete block
+  interfaces before entities stream in on joining clients: without the fix, a
+  joining client could not see the `Name` field on blocks or the `Setup Actions`
+  button on timers and event controllers; with the fix enabled, all vanilla and
+  mod controls and actions appeared and worked normally throughout the session.
