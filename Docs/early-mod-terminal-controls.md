@@ -62,8 +62,11 @@ for the rest of the session.
 A transpiler on `MyTerminalBlock.BeforeGameLogicInit` routes its
 `CreateTerminalControls` call (inside `m_createControlsLock`) through a helper
 that tracks which block types have executed their own `CreateTerminalControls`
-in the current session, and a postfix on `MySession.Unload` clears that set when
-the world unloads:
+in the current session, a prefix/finalizer on `MyTerminalControlFactory` entry
+points synchronizes concurrent `MyAPIGateway.TerminalControls` calls from
+parallel entity-loading threads with `m_createControlsLock`, and a finalizer on
+`MySession.Unload` clears the initialized set even if a mod throws during
+world unload:
 
 1. For each uninitialized class in the block's inheritance chain from
    `MyTerminalBlock` down to the concrete block type, if `m_controls` already

@@ -10,6 +10,7 @@ using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Gui;
 using Sandbox.Game.World;
 using Shared.Plugin;
+using VRage;
 using VRage.Collections;
 
 namespace Shared.Patches;
@@ -46,7 +47,9 @@ namespace Shared.Patches;
 // m_controls before the block's own CreateTerminalControls has run, removes the premature
 // m_controls entries so every uninitialized class in the inheritance chain runs its
 // CreateTerminalControls, and then appends the stashed mod controls and actions after the
-// vanilla ones.
+// vanilla ones. Non-generic MyTerminalControlFactory entry points also synchronize on
+// m_createControlsLock when called from parallel entity-loading threads outside
+// BeforeGameLogicInit (such as MyGameLogicComponent.Init).
 //
 // ReSharper disable once UnusedType.Global
 [HarmonyPatch(typeof(MyTerminalBlock), "BeforeGameLogicInit")]
@@ -60,8 +63,14 @@ public static class EarlyModTerminalControlsPatch
             AccessTools.Method(typeof(MyTerminalBlock), "CreateTerminalControls")
         );
 
+    private static readonly FastResourceLock CreateControlsLock = (FastResourceLock)
+        AccessTools.Field(typeof(MyTerminalBlock), "m_createControlsLock")?.GetValue(null);
+
     private static readonly IDictionary ControlsDict = (IDictionary)
         AccessTools.Field(typeof(MyTerminalControlFactory), "m_controls")?.GetValue(null);
+
+    private static readonly FastResourceLock ControlsLock = (FastResourceLock)
+        AccessTools.Field(typeof(MyTerminalControlFactory), "m_controlsLock")?.GetValue(null);
 
     private static readonly MethodInfo GetListMethod = AccessTools.Method(
         typeof(MyTerminalControlFactory),
@@ -78,9 +87,11 @@ public static class EarlyModTerminalControlsPatch
     private static readonly FieldInfo ActionsField = AccessTools.Field(BlockDataType, "Actions");
 
     // Tracks block types whose own CreateTerminalControls has executed in the current session.
-    // Guarded by MyTerminalBlock.m_createControlsLock, which BeforeGameLogicInit holds around
-    // the CreateTerminalControls call.
     private static readonly HashSet<Type> InitializedTypes = new();
+
+    // Tracks whether the current thread already holds non-reentrant CreateControlsLock.
+    [ThreadStatic]
+    private static int createControlsLockDepth;
 
     private struct SavedBlockControls
     {
@@ -88,6 +99,28 @@ public static class EarlyModTerminalControlsPatch
         public bool HadEntry;
         public List<ITerminalControl> Controls;
         public List<ITerminalAction> Actions;
+    }
+
+    private static void EnterCreateControlsLock(ref bool lockTaken)
+    {
+        if (createControlsLockDepth > 0 || CreateControlsLock == null)
+        {
+            lockTaken = false;
+            return;
+        }
+
+        CreateControlsLock.AcquireExclusive();
+        createControlsLockDepth = 1;
+        lockTaken = true;
+    }
+
+    private static void ExitCreateControlsLock(bool lockTaken)
+    {
+        if (!lockTaken)
+            return;
+
+        createControlsLockDepth = 0;
+        CreateControlsLock.ReleaseExclusive();
     }
 
     private static IEnumerable<CodeInstruction> Transpiler(
@@ -119,34 +152,60 @@ public static class EarlyModTerminalControlsPatch
 
     private static void CreateTerminalControls(MyTerminalBlock block)
     {
+        if (block == null)
+            return;
+
+        createControlsLockDepth++;
+        try
+        {
+            CreateTerminalControlsCore(block);
+        }
+        finally
+        {
+            createControlsLockDepth--;
+        }
+    }
+
+    private static void CreateTerminalControlsCore(MyTerminalBlock block)
+    {
         if (
-            block == null
+            CreateBlockTerminalControls == null
             || ControlsDict == null
+            || ControlsLock == null
             || GetListMethod == null
             || ControlsField == null
             || ActionsField == null
         )
         {
-            CreateBlockTerminalControls(block);
+            CreateBlockTerminalControls?.Invoke(block);
             return;
         }
 
         var concreteType = block.GetType();
-        if (InitializedTypes.Contains(concreteType))
+        bool alreadyInitialized;
+        lock (InitializedTypes)
+        {
+            alreadyInitialized = InitializedTypes.Contains(concreteType);
+        }
+
+        if (alreadyInitialized)
         {
             CreateBlockTerminalControls(block);
             return;
         }
 
         var chain = new List<Type>(4);
-        for (
-            var t = concreteType;
-            t != null && typeof(MyTerminalBlock).IsAssignableFrom(t);
-            t = t.BaseType
-        )
+        lock (InitializedTypes)
         {
-            if (!InitializedTypes.Contains(t))
-                chain.Add(t);
+            for (
+                var t = concreteType;
+                t != null && typeof(MyTerminalBlock).IsAssignableFrom(t);
+                t = t.BaseType
+            )
+            {
+                if (!InitializedTypes.Contains(t))
+                    chain.Add(t);
+            }
         }
 
         // Always record the chain even when the plugin is disabled, so enabling it mid-session
@@ -159,8 +218,11 @@ public static class EarlyModTerminalControlsPatch
             }
             finally
             {
-                foreach (var t in chain)
-                    InitializedTypes.Add(t);
+                lock (InitializedTypes)
+                {
+                    foreach (var t in chain)
+                        InitializedTypes.Add(t);
+                }
             }
 
             return;
@@ -177,20 +239,26 @@ public static class EarlyModTerminalControlsPatch
             t = t.BaseType
         )
         {
-            if (!ControlsDict.Contains(t))
+            var data = TryGetBlockData(t);
+            if (data == null)
                 continue;
 
-            var data = ControlsDict[t];
             if (ControlsField.GetValue(data) is MyUniqueList<ITerminalControl> ctrls)
             {
                 foreach (var c in ctrls.Items)
-                    ancestorControls.Add(c);
+                {
+                    if (c != null)
+                        ancestorControls.Add(c);
+                }
             }
 
             if (ActionsField.GetValue(data) is MyUniqueList<ITerminalAction> acts)
             {
                 foreach (var a in acts.Items)
-                    ancestorActions.Add(a);
+                {
+                    if (a != null)
+                        ancestorActions.Add(a);
+                }
             }
         }
 
@@ -198,15 +266,15 @@ public static class EarlyModTerminalControlsPatch
         foreach (var t in chain)
         {
             var item = new SavedBlockControls { BlockType = t };
-            if (ControlsDict.Contains(t))
+            var data = TryGetBlockData(t);
+            if (data != null)
             {
                 item.HadEntry = true;
-                var data = ControlsDict[t];
                 if (ControlsField.GetValue(data) is MyUniqueList<ITerminalControl> ctrls)
                 {
                     foreach (var c in ctrls.Items)
                     {
-                        if (ancestorControls.Add(c))
+                        if (c != null && ancestorControls.Add(c))
                         {
                             item.Controls ??= new List<ITerminalControl>();
                             item.Controls.Add(c);
@@ -218,7 +286,7 @@ public static class EarlyModTerminalControlsPatch
                 {
                     foreach (var a in acts.Items)
                     {
-                        if (ancestorActions.Add(a))
+                        if (a != null && ancestorActions.Add(a))
                         {
                             item.Actions ??= new List<ITerminalAction>();
                             item.Actions.Add(a);
@@ -226,7 +294,10 @@ public static class EarlyModTerminalControlsPatch
                     }
                 }
 
-                ControlsDict.Remove(t);
+                using (ControlsLock.AcquireExclusiveUsing())
+                {
+                    ControlsDict.Remove(t);
+                }
             }
 
             saved.Add(item);
@@ -240,7 +311,11 @@ public static class EarlyModTerminalControlsPatch
         {
             foreach (var item in saved)
             {
-                InitializedTypes.Add(item.BlockType);
+                lock (InitializedTypes)
+                {
+                    InitializedTypes.Add(item.BlockType);
+                }
+
                 if (!item.HadEntry)
                     continue;
 
@@ -251,21 +326,11 @@ public static class EarlyModTerminalControlsPatch
                     var blockData = GetListMethod.Invoke(null, new object[] { item.BlockType });
                     AppendModItems(blockData, item.Controls, item.Actions);
 
-                    foreach (DictionaryEntry entry in ControlsDict)
+                    var subTargets = SnapshotMatchingSubtypeBlockData(item.BlockType);
+                    if (subTargets != null)
                     {
-                        // MyRadioAntenna.CreateTerminalControls removes the MyTerminalBlock base
-                        // controls with RemoveBaseClass<MyRadioAntenna, MyTerminalBlock> and adds
-                        // its own replacements.
-                        if (
-                            entry.Key is Type subType
-                            && subType != item.BlockType
-                            && item.BlockType.IsAssignableFrom(subType)
-                            && !(
-                                item.BlockType == typeof(MyTerminalBlock)
-                                && typeof(MyRadioAntenna).IsAssignableFrom(subType)
-                            )
-                        )
-                            AppendModItems(entry.Value, item.Controls, item.Actions);
+                        foreach (var subData in subTargets)
+                            AppendModItems(subData, item.Controls, item.Actions);
                     }
                 }
 
@@ -277,6 +342,44 @@ public static class EarlyModTerminalControlsPatch
                 );
             }
         }
+    }
+
+    private static object TryGetBlockData(Type blockType)
+    {
+        using (ControlsLock.AcquireSharedUsing())
+        {
+            return ControlsDict.Contains(blockType) ? ControlsDict[blockType] : null;
+        }
+    }
+
+    private static List<object> SnapshotMatchingSubtypeBlockData(Type baseType)
+    {
+        List<object> subTargets = null;
+        using (ControlsLock.AcquireSharedUsing())
+        {
+            foreach (DictionaryEntry entry in ControlsDict)
+            {
+                // MyRadioAntenna.CreateTerminalControls removes the MyTerminalBlock base
+                // controls with RemoveBaseClass<MyRadioAntenna, MyTerminalBlock> and adds
+                // its own replacements.
+                if (
+                    entry.Key is Type subType
+                    && subType != baseType
+                    && baseType.IsAssignableFrom(subType)
+                    && !(
+                        baseType == typeof(MyTerminalBlock)
+                        && typeof(MyRadioAntenna).IsAssignableFrom(subType)
+                    )
+                    && entry.Value != null
+                )
+                {
+                    subTargets ??= new List<object>();
+                    subTargets.Add(entry.Value);
+                }
+            }
+        }
+
+        return subTargets;
     }
 
     private static void AppendModItems(
@@ -307,12 +410,70 @@ public static class EarlyModTerminalControlsPatch
         }
     }
 
+    // MyEntities.Load initializes grids in parallel via Parallel.For. After a block finishes
+    // BeforeGameLogicInit (releasing m_createControlsLock), its MyGameLogicComponent.Init runs on
+    // the same worker thread and may call MyAPIGateway.TerminalControls while another worker
+    // thread is removing/rebuilding m_controls entries inside CreateTerminalControls. Acquire
+    // m_createControlsLock on non-generic MyTerminalControlFactory entry points when not already
+    // held on the current thread.
+    [HarmonyPatch]
+    private static class FactoryConcurrencyPatch
+    {
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            var methods = typeof(MyTerminalControlFactory).GetMethods(
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic
+            );
+
+            foreach (var m in methods)
+            {
+                if (m.IsGenericMethod || m.IsGenericMethodDefinition)
+                    continue;
+
+                switch (m.Name)
+                {
+                    case "InitializeControls":
+                    case "GetList":
+                    case nameof(MyTerminalControlFactory.AddControl):
+                    case nameof(MyTerminalControlFactory.RemoveControl):
+                    case nameof(MyTerminalControlFactory.AddAction):
+                    case nameof(MyTerminalControlFactory.AddActions):
+                        yield return m;
+                        break;
+                    case nameof(MyTerminalControlFactory.GetControls):
+                    case nameof(MyTerminalControlFactory.GetValueControls):
+                    case nameof(MyTerminalControlFactory.GetActions):
+                        if (m.GetParameters().Length == 2)
+                            yield return m;
+                        break;
+                }
+            }
+        }
+
+        private static void Prefix(ref bool __state)
+        {
+            __state = false;
+            if (Common.Config?.Enabled != true)
+                return;
+
+            EnterCreateControlsLock(ref __state);
+        }
+
+        private static void Finalizer(bool __state)
+        {
+            ExitCreateControlsLock(__state);
+        }
+    }
+
     [HarmonyPatch(typeof(MySession), nameof(MySession.Unload))]
     private static class SessionUnloadPatch
     {
-        private static void Postfix()
+        private static void Finalizer()
         {
-            InitializedTypes.Clear();
+            lock (InitializedTypes)
+            {
+                InitializedTypes.Clear();
+            }
         }
     }
 }
