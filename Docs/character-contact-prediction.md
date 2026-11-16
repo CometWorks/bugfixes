@@ -60,9 +60,9 @@ Live cluster lobby through the real Gateway, one bot client:
 |---|---|---|---|---|---|---|
 | first live run | Octahedron 1.2.9, cluster 0.3.15 | no | 6.4 min | 33.9% | 13 switch-offs | 0.7 m |
 | k1 | Octahedron 1.2.10, cluster 0.3.16 | no | 6.1 min | 0.0% | 1 | 0.76 m |
-| k2 | the same | 1.22.0 | 6.4 min | 0.0% | 1 | 0.18 m |
+| k2 | the same | 1.23.0 | 6.4 min | 0.0% | 1 | 0.18 m |
 | k3 | the same | no | 6.3 min | 2.6% | 2 | 0.52 m |
-| k4 | the same | 1.22.0 | 6.4 min | 0.0% | 1 | 0.29 m |
+| k4 | the same | 1.23.0 | 6.4 min | 0.0% | 1 | 0.29 m |
 
 Station hangar on a local dedicated server with the cluster's mods, 10 min
 each:
@@ -70,7 +70,7 @@ each:
 | Run | Bugfixes | Unpredicted | Flag changes | Snaps on prediction restart | Largest snap |
 |---|---|---|---|---|---|
 | plain3 | no | 5.0% | 7 | 10 | 0.85 m |
-| plain5 | 1.22.0 | 0.0% | 1 | 1 | 0.49 m |
+| plain5 | 1.23.0 | 0.0% | 1 | 1 | 0.49 m |
 
 The one flag change left in every run is prediction turning on at spawn. The
 small snaps of 0.1 to 0.3 m left with the fix are the normal reconciliation of
