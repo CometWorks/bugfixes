@@ -28,6 +28,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LaserAntennaRepairWeldPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LoadCameraEntityIdZeroPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\MergeBlockPhysicsPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\PistonAttachWithoutSubpartsPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\ConveyorTubeWithoutLinePatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ModFileHandlesPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ModWithoutDataFolderPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelpers.cs" />

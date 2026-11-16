@@ -60,6 +60,8 @@ None yet.
 - [Crash when an event controller's block selection lists a block twice](Docs/event-controller-selected-blocks.md)
 - [Crash when a grid with a merge block whose model has no merge field is added to the world](Docs/merge-block-physics.md)
 - [Crash inside Havok when a physics cluster reorder removes a rigid body that is not in the world](Docs/havok-batch-removal.md)
+- [Crash when a piston base without its subparts attaches its top](Docs/piston-attach-without-subparts.md)
+- [Crash when a conveyor tube without a conveyor line updates](Docs/conveyor-tube-without-line.md)
 
 ## Legal
 
