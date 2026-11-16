@@ -110,13 +110,7 @@ public static class CharacterContactPredictionPatch
         Vector3D position = matrix.Translation;
         var rotation = Quaternion.CreateFromRotationMatrix(in matrix);
         Overlaps.Clear();
-        MyPhysics.GetPenetrationsShape(
-            shape,
-            ref position,
-            ref rotation,
-            Overlaps,
-            OverlapLayer
-        );
+        MyPhysics.GetPenetrationsShape(shape, ref position, ref rotation, Overlaps, OverlapLayer);
         try
         {
             foreach (var overlap in Overlaps)

@@ -31,6 +31,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 - [Jagged edges on block label text seen close up](Docs/text-atlas-edges.md)
 - [Seat interior drawn over the outside of a cockpit or cryo chamber after its grid is hidden and shown](Docs/cockpit-interior-visibility.md)
 - [Render thread crash in the LCD offscreen renderer when a render message is reused too early](Docs/offscreen-render-message-reuse.md)
+- [Character snaps back after touching a station in multiplayer](Docs/character-contact-prediction.md)
 
 ### Server only
 
