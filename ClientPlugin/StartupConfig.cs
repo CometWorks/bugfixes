@@ -1,21 +1,17 @@
 using System;
 using System.IO;
-using System.Xml.Serialization;
 using Shared.Config;
 
 namespace ClientPlugin;
 
-[XmlRoot(nameof(PluginConfig))]
-public sealed class ClientConfig : PluginConfig
+internal static class StartupConfig
 {
-    private static readonly Lazy<ClientConfig> Startup = new(ReadAtStartup);
+    private static readonly Lazy<PluginConfig> Startup = new(ReadAtStartup);
 
-    public ClientConfig() => WorldStorageInWorldFolder = true;
-
-    internal static ClientConfig AtStartup => Startup.Value;
+    internal static PluginConfig AtStartup => Startup.Value;
 
     // Pulsar queries preloaders before VRage.FileSystem is initialized.
-    private static ClientConfig ReadAtStartup()
+    private static PluginConfig ReadAtStartup()
     {
         var args = Environment.GetCommandLineArgs();
         var index = Array.IndexOf(args, "-appdata");
@@ -31,7 +27,7 @@ public sealed class ClientConfig : PluginConfig
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "SpaceEngineers"
                 );
-        return PersistentConfig<ClientConfig>.Peek(Path.Combine(folder, FileName))
-            ?? new ClientConfig();
+        return PersistentConfig<PluginConfig>.Peek(Path.Combine(folder, PluginConfig.FileName))
+            ?? new PluginConfig();
     }
 }

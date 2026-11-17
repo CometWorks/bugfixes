@@ -37,14 +37,14 @@ public class Plugin : IPlugin, ICommonPlugin
     private static readonly IPluginLogger Logger = new PluginLogger(Name);
 
     public IPluginConfig Config { get; private set; }
-    private PersistentConfig<ClientConfig> config;
+    private PersistentConfig<PluginConfig> config;
 
     // Called by Pulsar for every script and mod compilation, before the game's own rewriters
     // and the whitelist check
     // ReSharper disable once UnusedMember.Global
     public static CSharpCompilation Rewrite(CSharpCompilation compilation, MyApiTarget target)
     {
-        var current = Common.Config ?? ClientConfig.AtStartup;
+        var current = Common.Config ?? StartupConfig.AtStartup;
         if (!current.Enabled || !current.IsolateMathStatics)
             return compilation;
 
@@ -66,23 +66,16 @@ public class Plugin : IPlugin, ICommonPlugin
         Log.Info("Loading");
 
         var configPath = Path.Combine(MyFileSystem.UserDataPath, PluginConfig.FileName);
-        config = PersistentConfig<ClientConfig>.Load(Log, configPath);
+        config = PersistentConfig<PluginConfig>.Load(Log, configPath);
 
         // Some fixes keep state across frames. Keep their settings fixed until restart.
-        var startupConfig = ClientConfig.AtStartup;
+        var startupConfig = StartupConfig.AtStartup;
         Config = startupConfig;
 
         var gameVersion = MyFinalBuildConstants.APP_VERSION_STRING.ToString();
         Common.SetPlugin(this, gameVersion, MyFileSystem.UserDataPath);
 
-        if (
-            !PatchHelpers.HarmonyPatchAll(
-                Log,
-                new Harmony(Name),
-                startupConfig,
-                ClientFixes.MapClientPatch
-            )
-        )
+        if (!PatchHelpers.HarmonyPatchAll(Log, new Harmony(Name), startupConfig))
         {
             failed = true;
             return;

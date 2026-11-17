@@ -44,8 +44,8 @@ differs from their session name. Mods and tools that expect the old path may
 stop finding existing data. Turn the setting off to use the game's original
 storage path.
 
-The setting is on by default for new client configurations and off by default
-on dedicated servers. Clients keep any saved value. Change it in the Bugfixes
+The setting is on by default for new configurations. Both clients and dedicated
+servers keep any saved value. Change it in the Bugfixes
 Settings dialog on a client or edit `Bugfixes.cfg` in the server's data folder
 (the `-path` of a Magnetar server), then restart:
 

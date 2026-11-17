@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 using Sandbox;
 using Sandbox.Graphics.GUI;
 using Shared.Config;
@@ -9,6 +12,14 @@ namespace ClientPlugin.Settings;
 internal sealed class SettingsScreen : MyGuiScreenBase
 {
     private readonly PluginConfig config;
+    private static readonly PropertyInfo[] Settings = typeof(PluginConfig)
+        .GetProperties()
+        .Where(property =>
+            property.PropertyType == typeof(bool)
+            && property.GetCustomAttribute<CategoryAttribute>()?.Category != "Server"
+        )
+        .OrderBy(property => property.MetadataToken)
+        .ToArray();
 
     public SettingsScreen(PluginConfig config)
         : base(
@@ -41,19 +52,17 @@ internal sealed class SettingsScreen : MyGuiScreenBase
         base.RecreateControls(constructor);
         AddCaption("Bugfixes Settings");
 
-        var (masterId, masterLabel) = ClientFixes.Settings[0];
-        AddSetting(Controls, masterId, masterLabel, -0.25f);
+        AddSetting(Controls, Settings[0], -0.25f);
 
         const float rowHeight = 0.043f;
         var rows = new MyGuiControlParent
         {
             OriginAlign = MyGuiDrawAlignEnum.HORISONTAL_CENTER_AND_VERTICAL_TOP,
-            Size = new Vector2(0.46f, rowHeight * (ClientFixes.Settings.Length - 1)),
+            Size = new Vector2(0.46f, rowHeight * (Settings.Length - 1)),
         };
-        for (var i = 1; i < ClientFixes.Settings.Length; i++)
+        for (var i = 1; i < Settings.Length; i++)
         {
-            var (id, label) = ClientFixes.Settings[i];
-            AddSetting(rows.Controls, id, label, -rows.Size.Y / 2 + rowHeight * (i - 0.5f));
+            AddSetting(rows.Controls, Settings[i], -rows.Size.Y / 2 + rowHeight * (i - 0.5f));
         }
 
         var scroll = new MyGuiControlScrollablePanel(rows)
@@ -75,26 +84,18 @@ internal sealed class SettingsScreen : MyGuiScreenBase
         );
     }
 
-    private void AddSetting(MyGuiControls controls, string id, string label, float y)
+    private void AddSetting(MyGuiControls controls, PropertyInfo property, float y)
     {
-        var tooltip = id switch
-        {
-            nameof(PluginConfig.Enabled) =>
-                "Controls all client fixes. Individual settings are kept.",
-            nameof(PluginConfig.IsolateMathStatics) =>
-                "Keeps scripts and mods from changing shared math values like Vector3D.Zero.",
-            nameof(PluginConfig.WorldStorageInWorldFolder) =>
-                "Uses the loaded world's folder. Mods may stop seeing data stored under the old path.",
-            _ => label,
-        };
+        var label = property.GetCustomAttribute<DisplayNameAttribute>().DisplayName;
+        var tooltip = property.GetCustomAttribute<DescriptionAttribute>().Description;
         var checkbox = new MyGuiControlCheckbox(
             position: new Vector2(-0.20f, y),
             toolTip: tooltip,
-            isChecked: config.IsFixEnabled(id)
+            isChecked: (bool)property.GetValue(config)
         )
         {
-            Name = id,
-            IsCheckedChanged = control => config.SetFixEnabled(id, control.IsChecked),
+            Name = property.Name,
+            IsCheckedChanged = control => property.SetValue(config, control.IsChecked),
         };
         var caption = new MyGuiControlLabel(position: new Vector2(-0.17f, y), text: label);
         caption.SetToolTip(tooltip);

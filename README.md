@@ -45,7 +45,7 @@ None yet.
 - [Debris crashing the game on an entity id that is already taken](Docs/debris-entity-id.md)
 - [Blueprints with an empty construction stockpile fail to paste in a hosted world](Docs/empty-stockpile-paste.md)
 - [World fails to load when a mod registers an entity with id 0](Docs/load-camera-entity-id-zero.md)
-- [Mod world storage in the wrong folder when the world folder is renamed](Docs/world-save-path.md) (opt-in on dedicated servers)
+- [Mod world storage in the wrong folder when the world folder is renamed](Docs/world-save-path.md)
 - [Files a mod left open staying locked after the world unloads](Docs/mod-file-handles.md)
 - [Crash when a rocket hits a character whose identity was removed](Docs/character-missile-identity.md)
 - [Conveyor sorters failing to load when a mod adds sorter controls early](Docs/conveyor-sorter-controls.md)
@@ -72,49 +72,17 @@ after restarting the game. Existing values in that file are preserved.
 If a world has a different folder name and session name, check its existing mod
 data before changing the [world storage setting](Docs/world-save-path.md).
 
-## Dedicated server settings
+## Shared configuration
 
-Edit `Bugfixes.cfg` in the server's data folder, then restart the server. The
-server uses the same keys as the client for shared fixes. `Enabled` controls all
-fixes. `IsolateMathStatics` defaults to `true` and `WorldStorageInWorldFolder`
-defaults to `false` on dedicated servers.
+Both client and server load `Shared.Config.PluginConfig` from `Bugfixes.cfg`.
+Every fix has a boolean property that defaults to `true`. Existing saved values
+take precedence. `Enabled` controls the plugin as a whole.
 
-The other shared fixes are enabled unless you list their keys under
-`DisabledFixes`. This example disables the mod file cleanup fix.
-
-```xml
-<DisabledFixes>
-  <string>ModFileHandlesPatch</string>
-</DisabledFixes>
-```
-
-<details>
-<summary>Supported keys for DisabledFixes</summary>
-
-- `CharacterMissileIdentityPatch`
-- `ClipboardPreviewCreationBlockPatch`
-- `ClipboardPreviewFailedGridPatch`
-- `CockpitExitDampeningPatch`
-- `ConveyorSorterControlsPatch`
-- `ConveyorTubeWithoutLinePatch`
-- `DebrisEntityIdPatch`
-- `EmptyStockpilePastePatch`
-- `EventControllerSelectedBlocksPatch`
-- `HavokBatchRemovalPatch`
-- `HavokEndOfStepCallbackPatch`
-- `LaserAntennaRepairWeldPatch`
-- `LoadCameraEntityIdZeroPatch`
-- `MergeBlockPhysicsPatch`
-- `ModFileHandlesPatch`
-- `ModWithoutDataFolderPatch`
-- `PistonAttachWithoutSubpartsPatch`
-- `PlacementTestShapeLeakPatch`
-- `RadiationStatClosedCharacterPatch`
-- `SoundBlockEmitterPatch`
-- `ThrustOverrideMultiplierPatch`
-- `VoxelClipmapWaitSetPatch`
-
-</details>
+On a dedicated server, edit the file in its data folder, then restart. For
+example, `<ModFileHandlesPatch>false</ModFileHandlesPatch>` disables mod file
+cleanup. Client-only properties have no effect on the server. The client dialog
+shows shared and client settings, with labels and descriptions from the config
+properties.
 
 ## Legal
 

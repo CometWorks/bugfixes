@@ -13,8 +13,7 @@ public static class Preloader
 {
     // ReSharper disable once UnusedMember.Global
     public static IEnumerable<string> TargetDLLs =>
-        ClientConfig.AtStartup.Enabled
-        && ClientConfig.AtStartup.IsFixEnabled(nameof(ActorWorldMatrixIndexPrepatch))
+        StartupConfig.AtStartup.Enabled && StartupConfig.AtStartup.ActorWorldMatrixIndexPrepatch
             ? new[] { "VRage.Render.dll" }
             : Array.Empty<string>();
 

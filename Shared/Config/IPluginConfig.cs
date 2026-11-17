@@ -17,6 +17,4 @@ public interface IPluginConfig : INotifyPropertyChanged
     // it may write, like Vector3D.Zero, instead of letting it change them for the whole game.
     // On by default. See Docs/vragemath-statics.md.
     bool IsolateMathStatics { get; set; }
-
-    // TODO: Add config properties here, then extend the implementing classes accordingly, also add UI to ConfigView.xaml
 }
