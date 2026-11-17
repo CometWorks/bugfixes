@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Config\IPluginConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Config\ConfigTargetAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config\PersistentConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config\PluginConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging\IPluginLogger.cs" />

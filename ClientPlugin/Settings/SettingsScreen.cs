@@ -16,7 +16,7 @@ internal sealed class SettingsScreen : MyGuiScreenBase
         .GetProperties()
         .Where(property =>
             property.PropertyType == typeof(bool)
-            && property.GetCustomAttribute<CategoryAttribute>()?.Category != "Server"
+            && property.GetCustomAttribute<ConfigTargetAttribute>()?.Target != PluginTarget.Server
         )
         .OrderBy(property => property.MetadataToken)
         .ToArray();
@@ -54,15 +54,32 @@ internal sealed class SettingsScreen : MyGuiScreenBase
 
         AddSetting(Controls, Settings[0], -0.25f);
 
+        var groups = Settings
+            .Skip(1)
+            .GroupBy(property => property.GetCustomAttribute<CategoryAttribute>().Category)
+            .ToArray();
         const float rowHeight = 0.043f;
         var rows = new MyGuiControlParent
         {
             OriginAlign = MyGuiDrawAlignEnum.HORISONTAL_CENTER_AND_VERTICAL_TOP,
-            Size = new Vector2(0.46f, rowHeight * (Settings.Length - 1)),
+            Size = new Vector2(0.46f, rowHeight * (Settings.Length - 1 + groups.Length)),
         };
-        for (var i = 1; i < Settings.Length; i++)
+        var y = -rows.Size.Y / 2 + rowHeight / 2;
+        foreach (var group in groups)
         {
-            AddSetting(rows.Controls, Settings[i], -rows.Size.Y / 2 + rowHeight * (i - 0.5f));
+            rows.Controls.Add(
+                new MyGuiControlLabel(
+                    position: new Vector2(-0.218f, y),
+                    text: group.Key,
+                    font: "White"
+                )
+            );
+            y += rowHeight;
+            foreach (var property in group)
+            {
+                AddSetting(rows.Controls, property, y);
+                y += rowHeight;
+            }
         }
 
         var scroll = new MyGuiControlScrollablePanel(rows)

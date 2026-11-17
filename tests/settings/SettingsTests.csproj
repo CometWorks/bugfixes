@@ -5,6 +5,7 @@
     <LangVersion>14</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../Shared/Config/ConfigTargetAttribute.cs" Link="ConfigTargetAttribute.cs" />
     <Compile Include="../../Shared/Config/PluginConfig.cs" Link="PluginConfig.cs" />
     <Compile Include="../../Shared/Config/IPluginConfig.cs" Link="IPluginConfig.cs" />
   </ItemGroup>
