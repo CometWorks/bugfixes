@@ -36,7 +36,7 @@ Settled against decompiled 1.210.014.
 A postfix on `UpdatePredictionFlag` runs only when that call has just turned
 `ForceDisablePrediction` on, on a client, for a live character not on a
 ladder. It repeats the game's overlap test and checks every grid the capsule
-touches. If each one is static or moves slower than 0.5 m/s at the
+touches. If each one is static or moves slower than `CharacterContactRestSpeed` (0.5 m/s by default) at the
 character's position, the postfix clears `ForceDisablePrediction` and sets
 `IsClientPredicted` the way the method would have without it.
 
@@ -44,6 +44,23 @@ A touch with a moving grid still turns prediction off as before. So does an
 excessive correction (`AverageCorrection` over 20), a separate trigger in the
 same method. A mod cannot make this change: `MyCharacter` is not on the mod
 script whitelist.
+
+On by default. Both settings are in `Bugfixes.cfg`, in the game's user data
+folder (`%AppData%\SpaceEngineers` on Windows). `CharacterContactPrediction`
+set to `false` turns the fix off. `CharacterContactRestSpeed` is the fastest
+speed in m/s, at the character's position, at which a touched grid still
+counts as at rest. Restart the game after changing them. A file written by an
+older Bugfixes has no such lines, which means on and 0.5 m/s.
+
+```xml
+<PluginConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Enabled>true</Enabled>
+  <WorldStorageInWorldFolder>false</WorldStorageInWorldFolder>
+  <IsolateMathStatics>true</IsolateMathStatics>
+  <CharacterContactPrediction>true</CharacterContactPrediction>
+  <CharacterContactRestSpeed>0.5</CharacterContactRestSpeed>
+</PluginConfig>
+```
 
 ## Testing
 

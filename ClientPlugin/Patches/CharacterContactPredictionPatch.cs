@@ -34,7 +34,8 @@ namespace ClientPlugin.Patches;
 //
 // The prefix remembers whether prediction was already forced off. The postfix acts only when
 // this call switched it off, which inside the method only the overlap does. It repeats the
-// overlap test, and if every overlapped grid is static or slower than 0.5 m/s at the character,
+// overlap test, and if every overlapped grid is static or slower than CharacterContactRestSpeed
+// (0.5 m/s by default) at the character,
 // it clears the flag and restores IsClientPredicted. The game's own InvokeLater of
 // UpdateCharacterPhysics then runs with the restored value. An overlap with a moving grid, and
 // the switch-off after excessive corrections, are left to the game.
@@ -47,8 +48,6 @@ namespace ClientPlugin.Patches;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class CharacterContactPredictionPatch
 {
-    private const float RestSpeedSquared = 0.5f * 0.5f;
-
     // The collision layer the game's own test uses
     private const int OverlapLayer = MyPhysics.CollisionLayers.CollisionLayerWithoutCharacter;
 
@@ -77,8 +76,8 @@ public static class CharacterContactPredictionPatch
             || Sync.IsServer
             || __instance.IsDead
             || __instance.IsOnLadder
-            || Common.Config?.Enabled != true
-            || !OverlapsOnlyGridsAtRest(__instance)
+            || Common.Config is not { Enabled: true, CharacterContactPrediction: true } config
+            || !OverlapsOnlyGridsAtRest(__instance, config.CharacterContactRestSpeed)
         )
             return;
 
@@ -95,7 +94,7 @@ public static class CharacterContactPredictionPatch
             SetIsClientPredicted.Invoke(__instance, new object[] { predicted });
     }
 
-    private static bool OverlapsOnlyGridsAtRest(MyCharacter character)
+    private static bool OverlapsOnlyGridsAtRest(MyCharacter character, float restSpeed)
     {
         var proxy = character.Physics?.CharacterProxy;
         if (proxy == null)
@@ -117,7 +116,7 @@ public static class CharacterContactPredictionPatch
             {
                 if (
                     overlap.Body.UserObject is MyGridPhysics { IsStatic: false } grid
-                    && grid.GetVelocityAtPoint(position).LengthSquared() > RestSpeedSquared
+                    && grid.GetVelocityAtPoint(position).LengthSquared() > restSpeed * restSpeed
                 )
                     return false;
             }

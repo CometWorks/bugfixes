@@ -30,6 +30,8 @@ public class PluginConfig : IPluginConfig
     private bool enabled = true;
     private bool worldStorageInWorldFolder;
     private bool isolateMathStatics = true;
+    private bool characterContactPrediction = true;
+    private float characterContactRestSpeed = 0.5f;
 
     // TODO: Implement your config fields here
     // The default values here will apply to Client and Dedicated.
@@ -51,6 +53,18 @@ public class PluginConfig : IPluginConfig
     {
         get => isolateMathStatics;
         set => SetValue(ref isolateMathStatics, value);
+    }
+
+    public bool CharacterContactPrediction
+    {
+        get => characterContactPrediction;
+        set => SetValue(ref characterContactPrediction, value);
+    }
+
+    public float CharacterContactRestSpeed
+    {
+        get => characterContactRestSpeed;
+        set => SetValue(ref characterContactRestSpeed, value);
     }
 
     // TODO: Encapsulate your config fields as properties here
