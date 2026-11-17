@@ -18,5 +18,14 @@ public interface IPluginConfig : INotifyPropertyChanged
     // On by default. See Docs/vragemath-statics.md.
     bool IsolateMathStatics { get; set; }
 
+    // Keeps client prediction of the player's character on while it touches only grids at rest,
+    // instead of the vanilla 10 s without prediction after any contact. On by default.
+    // See Docs/character-contact-prediction.md.
+    bool CharacterContactPrediction { get; set; }
+
+    // Fastest speed in m/s, at the character's position, at which a touched grid still counts
+    // as at rest for CharacterContactPrediction. 0.5 by default.
+    float CharacterContactRestSpeed { get; set; }
+
     // TODO: Add config properties here, then extend the implementing classes accordingly, also add UI to ConfigView.xaml
 }
