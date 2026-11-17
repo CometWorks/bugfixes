@@ -29,7 +29,7 @@ namespace Shared.Patches;
 // folder it will be saved to after loading. The transpiler keeps that for worlds loaded from
 // the game's Content folder, the templates, and uses the loaded folder for everything else.
 //
-// Opt-in with WorldStorageInWorldFolder in Bugfixes.cfg. Mods may rely on the vanilla folder, and
+// Controlled by WorldStorageInWorldFolder in Bugfixes.cfg. Mods may rely on the vanilla folder, and
 // the storage of an existing world moves when this is turned on. While it is off, the game's path
 // is passed through unchanged.
 //
