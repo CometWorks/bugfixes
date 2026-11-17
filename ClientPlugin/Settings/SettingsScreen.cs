@@ -8,9 +8,9 @@ namespace ClientPlugin.Settings;
 
 internal sealed class SettingsScreen : MyGuiScreenBase
 {
-    private readonly ClientConfig config;
+    private readonly PluginConfig config;
 
-    public SettingsScreen(ClientConfig config)
+    public SettingsScreen(PluginConfig config)
         : base(
             new Vector2(0.5f),
             MyGuiConstants.SCREEN_BACKGROUND_COLOR,

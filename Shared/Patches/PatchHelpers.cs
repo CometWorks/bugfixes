@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using Shared.Config;
 using Shared.Logging;
 using Shared.Plugin;
 using Shared.Tools;
@@ -16,9 +17,13 @@ public static class PatchHelpers
     public static bool HarmonyPatchAll(
         IPluginLogger log,
         Harmony harmony,
-        Func<Type, bool> enabled = null
+        PluginConfig config,
+        Func<string, string> mapClientPatch = null
     )
     {
+        if (!config.Enabled)
+            return true;
+
 #if DEBUG && LIST_ALL_TYPES
         log.Info("All types:");
         foreach (var typ in AccessTools.AllTypes())
@@ -48,12 +53,12 @@ public static class PatchHelpers
         log.Debug("Applying Harmony patches");
         try
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            if (enabled == null)
-                harmony.PatchAll(assembly);
-            else
-                foreach (var type in AccessTools.GetTypesFromAssembly(assembly).Where(enabled))
+            foreach (var type in AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly()))
+            {
+                var fix = GetFixId(type);
+                if (config.IsFixEnabled(mapClientPatch?.Invoke(fix) ?? fix))
                     harmony.CreateClassProcessor(type).Patch();
+            }
         }
         catch (Exception ex)
         {
@@ -62,6 +67,20 @@ public static class PatchHelpers
         }
 
         return true;
+    }
+
+    private static string GetFixId(Type patch)
+    {
+        // Nested patch classes belong to the same fix as their enclosing class.
+        while (patch.DeclaringType != null)
+            patch = patch.DeclaringType;
+
+        return patch.Name switch
+        {
+            nameof(ScriptCompilerNamePatch) => nameof(PluginConfig.IsolateMathStatics),
+            nameof(WorldSavePathPatch) => nameof(PluginConfig.WorldStorageInWorldFolder),
+            _ => patch.Name,
+        };
     }
 
     // Called after loading configuration, but before patching

@@ -1,4 +1,3 @@
-using System;
 using ClientPlugin.Patches;
 using Shared.Config;
 using Shared.Patches;
@@ -9,22 +8,13 @@ internal static class ClientFixes
 {
     internal const string VicinityModelPaths = nameof(VicinityModelPaths);
 
-    // Patch class names double as config keys except where one fix uses multiple hooks
-    // or already has its own config key.
-    internal static string GetPatchFix(Type patch)
-    {
-        while (patch.DeclaringType != null)
-            patch = patch.DeclaringType;
-
-        return patch.Name switch
+    internal static string MapClientPatch(string patch) =>
+        patch switch
         {
             nameof(MyLocalCacheVicinityModelPathPatch) or nameof(MySessionVicinityModelPathPatch) =>
                 VicinityModelPaths,
-            nameof(ScriptCompilerNamePatch) => nameof(PluginConfig.IsolateMathStatics),
-            nameof(WorldSavePathPatch) => nameof(PluginConfig.WorldStorageInWorldFolder),
-            _ => patch.Name,
+            _ => patch,
         };
-    }
 
     internal static readonly (string Id, string Label)[] Settings =
     {

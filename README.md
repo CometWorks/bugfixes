@@ -72,6 +72,50 @@ after restarting the game. Existing values in that file are preserved.
 If a world has a different folder name and session name, check its existing mod
 data before changing the [world storage setting](Docs/world-save-path.md).
 
+## Dedicated server settings
+
+Edit `Bugfixes.cfg` in the server's data folder, then restart the server. The
+server uses the same keys as the client for shared fixes. `Enabled` controls all
+fixes. `IsolateMathStatics` defaults to `true` and `WorldStorageInWorldFolder`
+defaults to `false` on dedicated servers.
+
+The other shared fixes are enabled unless you list their keys under
+`DisabledFixes`. This example disables the mod file cleanup fix.
+
+```xml
+<DisabledFixes>
+  <string>ModFileHandlesPatch</string>
+</DisabledFixes>
+```
+
+<details>
+<summary>Supported keys for DisabledFixes</summary>
+
+- `CharacterMissileIdentityPatch`
+- `ClipboardPreviewCreationBlockPatch`
+- `ClipboardPreviewFailedGridPatch`
+- `CockpitExitDampeningPatch`
+- `ConveyorSorterControlsPatch`
+- `ConveyorTubeWithoutLinePatch`
+- `DebrisEntityIdPatch`
+- `EmptyStockpilePastePatch`
+- `EventControllerSelectedBlocksPatch`
+- `HavokBatchRemovalPatch`
+- `HavokEndOfStepCallbackPatch`
+- `LaserAntennaRepairWeldPatch`
+- `LoadCameraEntityIdZeroPatch`
+- `MergeBlockPhysicsPatch`
+- `ModFileHandlesPatch`
+- `ModWithoutDataFolderPatch`
+- `PistonAttachWithoutSubpartsPatch`
+- `PlacementTestShapeLeakPatch`
+- `RadiationStatClosedCharacterPatch`
+- `SoundBlockEmitterPatch`
+- `ThrustOverrideMultiplierPatch`
+- `VoxelClipmapWaitSetPatch`
+
+</details>
+
 ## Legal
 
 Space Engineers is a product of Keen Software House and is not affiliated with this project.

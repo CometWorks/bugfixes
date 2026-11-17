@@ -65,7 +65,7 @@ public class Plugin : IPlugin, ICommonPlugin
 
         Log.Info("Loading");
 
-        var configPath = Path.Combine(MyFileSystem.UserDataPath, ClientConfig.FileName);
+        var configPath = Path.Combine(MyFileSystem.UserDataPath, PluginConfig.FileName);
         config = PersistentConfig<ClientConfig>.Load(Log, configPath);
 
         // Some fixes keep state across frames. Keep their settings fixed until restart.
@@ -76,11 +76,11 @@ public class Plugin : IPlugin, ICommonPlugin
         Common.SetPlugin(this, gameVersion, MyFileSystem.UserDataPath);
 
         if (
-            startupConfig.Enabled
-            && !PatchHelpers.HarmonyPatchAll(
+            !PatchHelpers.HarmonyPatchAll(
                 Log,
                 new Harmony(Name),
-                type => startupConfig.IsFixEnabled(ClientFixes.GetPatchFix(type))
+                startupConfig,
+                ClientFixes.MapClientPatch
             )
         )
         {
