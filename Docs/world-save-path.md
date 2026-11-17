@@ -2,7 +2,7 @@
 
 **Category:** Client + Server
 **Patch:** `Shared/Patches/WorldSavePathPatch.cs`
-**Off by default:** turn it on with `WorldStorageInWorldFolder` in `Bugfixes.cfg`
+**Setting:** `WorldStorageInWorldFolder` in `Bugfixes.cfg`
 
 ## The bug
 
@@ -39,17 +39,15 @@ belongs.
 
 ## The fix
 
-The fix is opt-in. It changes where mods keep their files for every world
-whose folder name differs from its session name, so a mod would no longer find
-what it wrote to the vanilla folder before, and a mod or a server tool that
-expects the vanilla folder may break. With the setting off, the default, the
-game uses its own path, exactly as without the plugin.
+The fix changes where mods keep their files for worlds whose folder name
+differs from their session name. Mods and tools that expect the old path may
+stop finding existing data. Turn the setting off to use the game's original
+storage path.
 
-To turn it on, set `WorldStorageInWorldFolder` to `true` in `Bugfixes.cfg` and
-restart the game or the server. The plugin writes that file with the defaults
-on its first start, into the game's user data folder on a client
-(`%AppData%\SpaceEngineers` on Windows) and into the server's data folder
-(the `-path` of a Magnetar server):
+The setting is on by default for new client configurations and off by default
+on dedicated servers. Clients keep any saved value. Change it in the Bugfixes
+Settings dialog on a client or edit `Bugfixes.cfg` in the server's data folder
+(the `-path` of a Magnetar server), then restart:
 
 ```xml
 <PluginConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">

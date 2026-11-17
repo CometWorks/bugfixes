@@ -13,7 +13,11 @@ namespace Shared.Patches;
 // ReSharper disable once UnusedType.Global
 public static class PatchHelpers
 {
-    public static bool HarmonyPatchAll(IPluginLogger log, Harmony harmony)
+    public static bool HarmonyPatchAll(
+        IPluginLogger log,
+        Harmony harmony,
+        Func<Type, bool> enabled = null
+    )
     {
 #if DEBUG && LIST_ALL_TYPES
         log.Info("All types:");
@@ -44,7 +48,12 @@ public static class PatchHelpers
         log.Debug("Applying Harmony patches");
         try
         {
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            var assembly = Assembly.GetExecutingAssembly();
+            if (enabled == null)
+                harmony.PatchAll(assembly);
+            else
+                foreach (var type in AccessTools.GetTypesFromAssembly(assembly).Where(enabled))
+                    harmony.CreateClassProcessor(type).Patch();
         }
         catch (Exception ex)
         {

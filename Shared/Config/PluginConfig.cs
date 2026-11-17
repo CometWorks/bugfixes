@@ -8,7 +8,7 @@ public class PluginConfig : IPluginConfig
 {
     public event PropertyChangedEventHandler PropertyChanged;
 
-    private void SetValue<T>(ref T field, T value, [CallerMemberName] string propName = "")
+    protected void SetValue<T>(ref T field, T value, [CallerMemberName] string propName = "")
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
             return;

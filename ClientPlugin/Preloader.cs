@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using ClientPlugin;
 using ClientPlugin.Patches;
 using Mono.Cecil;
 
@@ -10,7 +12,11 @@ using Mono.Cecil;
 public static class Preloader
 {
     // ReSharper disable once UnusedMember.Global
-    public static IEnumerable<string> TargetDLLs { get; } = new[] { "VRage.Render.dll" };
+    public static IEnumerable<string> TargetDLLs =>
+        ClientConfig.AtStartup.Enabled
+        && ClientConfig.AtStartup.IsFixEnabled(nameof(ActorWorldMatrixIndexPrepatch))
+            ? new[] { "VRage.Render.dll" }
+            : Array.Empty<string>();
 
     // ReSharper disable once UnusedMember.Global
     public static void Patch(AssemblyDefinition asmDef)

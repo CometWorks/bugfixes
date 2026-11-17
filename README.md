@@ -45,7 +45,7 @@ None yet.
 - [Debris crashing the game on an entity id that is already taken](Docs/debris-entity-id.md)
 - [Blueprints with an empty construction stockpile fail to paste in a hosted world](Docs/empty-stockpile-paste.md)
 - [World fails to load when a mod registers an entity with id 0](Docs/load-camera-entity-id-zero.md)
-- [Mod world storage in the wrong folder when the world folder is renamed](Docs/world-save-path.md) (opt-in, off by default)
+- [Mod world storage in the wrong folder when the world folder is renamed](Docs/world-save-path.md) (opt-in on dedicated servers)
 - [Files a mod left open staying locked after the world unloads](Docs/mod-file-handles.md)
 - [Crash when a rocket hits a character whose identity was removed](Docs/character-missile-identity.md)
 - [Conveyor sorters failing to load when a mod adds sorter controls early](Docs/conveyor-sorter-controls.md)
@@ -62,6 +62,15 @@ None yet.
 - [Crash inside Havok when a physics cluster reorder removes a rigid body that is not in the world](Docs/havok-batch-removal.md)
 - [Crash when a piston base without its subparts attaches its top](Docs/piston-attach-without-subparts.md)
 - [Crash when a conveyor tube without a conveyor line updates](Docs/conveyor-tube-without-line.md)
+
+## Client settings
+
+In Pulsar, open **Plugins**, double-click **Bugfixes**, and click **Settings**. Each
+fix is enabled by default. Changes are saved to `Bugfixes.cfg` and take effect
+after restarting the game. Existing values in that file are preserved.
+
+If a world has a different folder name and session name, check its existing mod
+data before changing the [world storage setting](Docs/world-save-path.md).
 
 ## Legal
 

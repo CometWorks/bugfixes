@@ -8,7 +8,7 @@ public interface IPluginConfig : INotifyPropertyChanged
     bool Enabled { get; set; }
 
     // Mod world storage in the folder the world was loaded from, instead of the vanilla
-    // SavesPath/<session name>. Off by default: turning it on moves the storage of worlds whose
+    // SavesPath/<session name>. Turning it on moves the storage of worlds whose
     // folder name differs from the session name, so mods won't see the data they wrote before.
     // See Docs/world-save-path.md.
     bool WorldStorageInWorldFolder { get; set; }
