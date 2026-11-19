@@ -125,6 +125,18 @@ public class PluginConfig : IPluginConfig
     } = true;
 
     [Category("Physics")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Turn off flames of a ship nobody flies")]
+    [Description(
+        "Turn off thruster flames left lit after another pilot lost control of a ship. Restart to apply changes."
+    )]
+    public bool RemotePilotFlamesPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    [Category("Physics")]
     [DisplayName("Guard Havok batch removal")]
     [Description("Guard Havok batch removal. Restart to apply changes.")]
     public bool HavokBatchRemovalPatch
