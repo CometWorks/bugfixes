@@ -39,21 +39,26 @@ own. Ships that are being flown are not touched.
 
 ## Testing
 
-On Linux (game 1.211.017, the CometWorks cluster bench on two nodes, two
-headless clients, 2026-11-19), bench scenario `P2-THRUST-FLAMES` of
-CometWorks/cluster: a pilot client burns forward in a small ship while an
-observer client watches from 25 m, then:
+`tests/thrust-flames/rig.py control|fix` runs one Magnetar server and two
+headless clients on an empty space world with a small ship: a seat, a battery
+and an ion thruster on each of its six faces, dampeners on. The pilot client
+sits in the seat and the observer watches from 30 m. The pilot holds each of
+W, S, A, D, Space and C for 1.5 s and lets go. Both clients must show a flame
+on the one thruster that pushes the ship that way, and none at all once the
+ship has stopped. Last, the pilot's game closes mid-burn, and the observer
+must show no flame once the ship has stopped. `control` runs the clients
+without Bugfixes, `fix` with this working copy. See the script for its
+environment variables.
 
-- *control*: the pilot lets go;
-- *handover*: the ship is handed to the other node during the burn, and the pilot
-  lets go there;
-- *drop*: the pilot's game is closed during the burn.
+On Linux (game 1.211.018, polaris, 2026-11-21), each variant ran 28 checks:
 
-Each leg compares the node's thruster strength with the observer's
-`IMyThrust.CurrentThrust` 8 s later.
+| Step | Without the fix | With the fix |
+|------|-----------------|--------------|
+| Each key, both clients: only the thruster pushing that way is lit | pass | pass |
+| Stopped after each key, both clients: no flame | pass | pass |
+| Pilot dropped out mid-burn, observer: no flame | **fail**, Backward thruster at full thrust | pass |
 
-| Leg | Node | Observer without the fix | Observer with the fix |
-|-----|------|--------------------------|-----------------------|
-| control | 0 N | 0 N | 0 N |
-| handover | 0 N | 0 N | 0 N |
-| drop | 0 N, no controller | 345,600 N (full) | 0 N |
+Before that, on 2026-11-19, the same drop leg on the CometWorks/cluster bench
+showed the observer at 345,600 N (full) without the fix and 0 N with it,
+while the server held no thrust. A handover of the ship to another node
+during a burn showed correct flames without the fix.
