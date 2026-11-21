@@ -231,6 +231,17 @@ public class PluginConfig : IPluginConfig
     } = true;
 
     [Category("Blocks and conveyors")]
+    [DisplayName("Reattach rotors, hinges and pistons on the update thread")]
+    [Description(
+        "Reattach rotors, hinges and pistons on the update thread. Restart to apply changes."
+    )]
+    public bool MechanicalReattachThreadPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    [Category("Blocks and conveyors")]
     [DisplayName("Guard pistons with missing subparts")]
     [Description("Guard pistons with missing subparts. Restart to apply changes.")]
     public bool PistonAttachWithoutSubpartsPatch

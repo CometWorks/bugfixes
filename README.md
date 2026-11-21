@@ -64,6 +64,7 @@ None yet.
 - [Crash inside Havok when a physics cluster reorder removes a rigid body that is not in the world](Docs/havok-batch-removal.md)
 - [Crash when a piston base without its subparts attaches its top](Docs/piston-attach-without-subparts.md)
 - [Crash when a conveyor tube without a conveyor line updates](Docs/conveyor-tube-without-line.md)
+- [Crash after joining or respawning near rotors and hinges while their grids stream in](Docs/mechanical-reattach-thread.md)
 
 ## Client settings
 
