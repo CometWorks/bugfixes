@@ -58,4 +58,20 @@ because the mods may still be live then.
 
 ## Testing
 
-TODO
+`tests/replicable-hierarchy-after-disconnect/rig.py` runs one Magnetar server and one isolated
+headless Pulsar client on Linux. The client's character sits in the seat of a small ship, then a
+probe plugin hands `MyMultiplayerClient.OnUserJoined` a `UserNotConnected` join result on the main
+thread, the way the cluster Gateway refused the reporter. After the client is back at the main menu
+it joins the same server again.
+
+Results on Linux (2026-11-21, game 1.211.018, Magnetar 2.4.3.9):
+
+| Check | Without Bugfixes | This branch |
+|-------|------------------|-------------|
+| pilot seated when refused | yes | yes |
+| world unloads cleanly | `Failed to cleanly unload session` | clean |
+| NRE from `MyCharacterReplicable.OnParentChanged` | thrown | none |
+| rejoin reaches the world | yes | yes |
+
+The test world has no mods, so the rejoin works even after the broken unload. The reporter's failed
+joins came from the mods and definitions the broken unload left behind.
