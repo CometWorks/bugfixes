@@ -95,6 +95,18 @@ public class PluginConfig : IPluginConfig
         set => SetValue(ref field, value);
     } = true;
 
+    [Category("Audio")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Voice chat follows the speaker")]
+    [Description(
+        "Play voice chat from where the speaker is now, not from where they first spoke. Restart to apply changes."
+    )]
+    public bool VoiceChatPositionPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
     [Category("User interface")]
     [ConfigTarget(PluginTarget.Client)]
     [DisplayName("Guard the HUD energy time stat")]
@@ -119,6 +131,18 @@ public class PluginConfig : IPluginConfig
     [DisplayName("Guard detached Havok contact listeners")]
     [Description("Guard detached Havok contact listeners. Restart to apply changes.")]
     public bool HavokEndOfStepCallbackPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    [Category("Physics")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Turn off flames of a ship nobody flies")]
+    [Description(
+        "Turn off thruster flames left lit after another pilot lost control of a ship. Restart to apply changes."
+    )]
+    public bool RemotePilotFlamesPatch
     {
         get;
         set => SetValue(ref field, value);
