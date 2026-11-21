@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
-using Sandbox.Game.Replication;
 using Shared.Plugin;
 using VRage.Network;
 
@@ -40,12 +39,19 @@ public static class ReplicableHierarchyAfterDisconnectPatch
         nameof(MyReplicationLayer.RefreshReplicableHierarchy)
     );
 
+    // The replicables are internal in Sandbox.Game, which the client build doesn't publicize
     private static IEnumerable<MethodBase> TargetMethods() =>
         [
-            AccessTools.Method(typeof(MyCharacterReplicable), "OnParentChanged"),
-            AccessTools.Method(typeof(MyTerminalReplicable), "OnBlockCubeGridChanged"),
-            AccessTools.Method(typeof(MyInventoryReplicable), "OnBlockCubeGridChanged"),
-            AccessTools.Method(typeof(MyInventoryBaseReplicable), "OnBlockCubeGridChanged"),
+            AccessTools.Method("Sandbox.Game.Replication.MyCharacterReplicable:OnParentChanged"),
+            AccessTools.Method(
+                "Sandbox.Game.Replication.MyTerminalReplicable:OnBlockCubeGridChanged"
+            ),
+            AccessTools.Method(
+                "Sandbox.Game.Replication.MyInventoryReplicable:OnBlockCubeGridChanged"
+            ),
+            AccessTools.Method(
+                "Sandbox.Game.Replication.MyInventoryBaseReplicable:OnBlockCubeGridChanged"
+            ),
         ];
 
     private static IEnumerable<CodeInstruction> Transpiler(
