@@ -54,8 +54,9 @@ the terminal can't show a control that was never created. The first time it
 skips one, it logs an info line that says a mod or plugin added sorter
 controls before the first sorter was initialized.
 
-The sorter's own controls stay missing from its terminal in such a world;
-that is up to the mod.
+[The early mod terminal controls fix](early-mod-terminal-controls.md) now
+creates the sorter's own controls when the first sorter is initialized even
+after a mod touched them early, so they appear in the terminal as usual.
 
 ## Testing
 
