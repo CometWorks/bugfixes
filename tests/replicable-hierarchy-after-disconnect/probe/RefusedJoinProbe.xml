@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+    <Id>refused-join-probe</Id>
+    <RepoId>local/refused-join-probe</RepoId>
+    <FriendlyName>Refused join probe (SE-1824 test)</FriendlyName>
+    <Author>CometWorks</Author>
+    <Tooltip>Test only: makes the client handle a refused join result, then rejoins</Tooltip>
+    <Description>Test only, for tests/replicable-hierarchy-after-disconnect/rig.py of the Bugfixes plugin. "refuse"
+        in refused-join-probe.txt in the game's user data folder makes the client handle a UserNotConnected join
+        result the way it does when the server sends one; "join" rejoins the Direct Transport server.
+    </Description>
+    <Hidden>true</Hidden>
+    <SourceDirectories>
+        <Directory>Source</Directory>
+    </SourceDirectories>
+</PluginData>
