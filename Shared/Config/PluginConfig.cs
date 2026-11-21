@@ -257,6 +257,15 @@ public class PluginConfig : IPluginConfig
         set => SetValue(ref field, value);
     } = true;
 
+    [Category("Multiplayer")]
+    [DisplayName("Unload the world cleanly after a refused join")]
+    [Description("Unload the world cleanly after a refused join. Restart to apply changes.")]
+    public bool ReplicableHierarchyAfterDisconnectPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
     [Category("Characters")]
     [DisplayName("Skip radiation updates on closed characters")]
     [Description("Skip radiation updates on closed characters. Restart to apply changes.")]

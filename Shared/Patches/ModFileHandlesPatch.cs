@@ -29,7 +29,8 @@ namespace Shared.Patches;
 // The postfix on those methods remembers each reader and writer a mod opened, with weak
 // references, so a mod that drops one still lets it be collected. The finalizer on
 // MySession.Unload disposes the ones whose file is still open. That runs after the mods'
-// UnloadData, so mods that close their files there are left alone. Every way out of a world
+// UnloadData, so mods that close their files there are left alone. When the unload itself
+// failed, the mods may not have been unloaded, so their files stay open until the next unload. Every way out of a world
 // goes through MySession.Unload: exit to menu, disconnect, a failed load, loading another save
 // and a dedicated server's world reload.
 //
@@ -143,8 +144,19 @@ public static class ModFileHandlesPatch
     [HarmonyPatch(typeof(MySession), nameof(MySession.Unload))]
     private static class SessionUnloadPatch
     {
-        private static void Finalizer()
+        private static void Finalizer(Exception __exception)
         {
+            // An unload that failed halfway may have skipped the mods' UnloadData, so their
+            // message handlers and events can still call into them. Closing their files now
+            // would turn the next log line of such a mod into an ObjectDisposedException
+            // (SE-1824). Leave them open, the next clean unload closes them.
+            if (__exception != null)
+            {
+                lock (OpenFiles)
+                    OpenFiles.RemoveAll(f => !f.IsOpen);
+                return;
+            }
+
             List<OpenFile> openFiles;
             lock (OpenFiles)
             {

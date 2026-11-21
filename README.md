@@ -64,6 +64,7 @@ None yet.
 - [Crash inside Havok when a physics cluster reorder removes a rigid body that is not in the world](Docs/havok-batch-removal.md)
 - [Crash when a piston base without its subparts attaches its top](Docs/piston-attach-without-subparts.md)
 - [Crash when a conveyor tube without a conveyor line updates](Docs/conveyor-tube-without-line.md)
+- [World left half unloaded after the server refuses a client in a cockpit, then failed or crashing re-joins](Docs/replicable-hierarchy-after-disconnect.md)
 
 ## Client settings
 
