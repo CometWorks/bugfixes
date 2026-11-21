@@ -95,6 +95,18 @@ public class PluginConfig : IPluginConfig
         set => SetValue(ref field, value);
     } = true;
 
+    [Category("Audio")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Voice chat follows the speaker")]
+    [Description(
+        "Play voice chat from where the speaker is now, not from where they first spoke. Restart to apply changes."
+    )]
+    public bool VoiceChatPositionPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
     [Category("User interface")]
     [ConfigTarget(PluginTarget.Client)]
     [DisplayName("Guard the HUD energy time stat")]
