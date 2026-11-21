@@ -41,7 +41,12 @@ stack.
 
 A finalizer on `MySession.Unload` disposes every tracked reader and writer whose
 file is still open. It runs after the mods' `UnloadData`, so a mod that closes
-its files there is left alone, and it also runs when the unload throws.
+its files there is left alone. When the unload throws, the finalizer leaves the
+files open: the unload may have stopped before the mods' `UnloadData`, so their
+message handlers and events can still run and write to their logs. The next
+clean unload closes them. Closing them anyway turned a mod's next log line
+into an `ObjectDisposedException` that dropped the client from the server
+(SE-1824, see [replicable-hierarchy-after-disconnect.md](replicable-hierarchy-after-disconnect.md)).
 Disposing a writer flushes it first, so what the mod wrote is saved. Each file
 closed this way gets an info line in the game log:
 
