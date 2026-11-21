@@ -109,6 +109,18 @@ public class PluginConfig : IPluginConfig
 
     [Category("User interface")]
     [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Clipboard for mods")]
+    [Description(
+        "Let mod text fields copy and paste through the system clipboard. Restart to apply changes."
+    )]
+    public bool ModClipboard
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    [Category("User interface")]
+    [ConfigTarget(PluginTarget.Client)]
     [DisplayName("Guard the HUD energy time stat")]
     [Description("Guard the HUD energy time stat. Restart to apply changes.")]
     public bool HudEnergyTimeRemainingStatPatch

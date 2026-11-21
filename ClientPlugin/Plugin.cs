@@ -81,6 +81,9 @@ public class Plugin : IPlugin, ICommonPlugin
             return;
         }
 
+        if (startupConfig.Enabled && startupConfig.ModClipboard)
+            ModClipboard.Register(Log);
+
         Log.Debug("Successfully loaded");
     }
 
