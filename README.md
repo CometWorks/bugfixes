@@ -33,6 +33,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 - [Render thread crash in the LCD offscreen renderer when a render message is reused too early](Docs/offscreen-render-message-reuse.md)
 - [Voice chat heard from where the speaker first spoke, not from where they are, for example sitting in a seat](Docs/voice-chat-position.md)
 - [Thruster flames left lit on a ship after its pilot, another player, lost control mid-burn](Docs/remote-pilot-flames.md)
+- [Crash when the "save your progress?" box, opened by closing the window while leaving a server, is answered on the main menu](Docs/save-progress-box-after-unload.md)
 
 ### Server only
 

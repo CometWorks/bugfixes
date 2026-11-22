@@ -119,6 +119,18 @@ public class PluginConfig : IPluginConfig
 
     [Category("User interface")]
     [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Exit when the save progress box outlives the session")]
+    [Description(
+        "Exit the game instead of crashing when the save progress box is answered after the session unloaded. Restart to apply changes."
+    )]
+    public bool SaveProgressBoxAfterUnloadPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    [Category("User interface")]
+    [ConfigTarget(PluginTarget.Client)]
     [DisplayName("Fix the caret after multiline paste")]
     [Description("Fix the caret after multiline paste. Restart to apply changes.")]
     public bool MultilinePasteCaretPatch
