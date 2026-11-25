@@ -38,7 +38,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 
 ### Server only
 
-- [Suited characters unable to push a resting large grid in space](Docs/character-grid-push.md)
+- [Suited characters unable to push a resting large grid in space](Docs/character-grid-push.md) (off by default, can be turned on)
 
 ### Client + Server
 
@@ -72,7 +72,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 ## Client settings
 
 In Pulsar, open **Plugins**, double-click **Bugfixes**, and click **Settings**. Each
-fix is enabled by default. Changes are saved to `Bugfixes.cfg` and take effect
+fix is enabled by default, except the ones marked "off by default" above. Changes are saved to `Bugfixes.cfg` and take effect
 after restarting the game. Existing values in that file are preserved.
 
 If a world has a different folder name and session name, check its existing mod
@@ -81,7 +81,8 @@ data before changing the [world storage setting](Docs/world-save-path.md).
 ## Shared configuration
 
 Both client and server load `Shared.Config.PluginConfig` from `Bugfixes.cfg`.
-Every fix has a boolean property that defaults to `true`. Existing saved values
+Every fix has a boolean property that defaults to `true`, except the ones
+marked "off by default" above. Existing saved values
 take precedence. `Enabled` controls the plugin as a whole.
 
 On a dedicated server, edit the file in its data folder, then restart. For
