@@ -6,6 +6,12 @@ A hand drill held next to exposed iron can show no ore marker. Grid detectors us
 
 The patch transforms the offset from the asteroid's corner to the detector into storage axes. The game then applies the detector radius along those axes and uses its existing code to query cells and place the HUD marker.
 
+Vanilla's five procedural asteroid generator definitions all set `RotateAsteroids` to `false`. On those asteroids the world and storage axes already match. An admin can reproduce the bug in an offline world by rotating the Red Ship scenario asteroid before pasting it. Markers for ore found by the scan still point to the right place, even when the detector misses a deposit beside the player.
+
+## Client setting
+
+Under **HUD**, **Detect ore on rotated asteroids** is enabled by default. Turn it off to use the vanilla search. Restart the client after changing it. The corresponding setting in `Bugfixes.cfg` is `RotatedAsteroidOrePatch`.
+
 ## Regression test
 
 An isolated Linux client loaded a copy of asteroid 0348 with its original orientation and seed 2 ore definitions. At the same position, the hand drill registered zero ore-bearing cells with the fix disabled and five iron-bearing cells with it enabled. The rendered HUD displayed **Iron** at approximately 30 m.
