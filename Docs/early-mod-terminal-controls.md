@@ -66,8 +66,7 @@ A transpiler on `MyTerminalBlock.BeforeGameLogicInit` routes its
 that tracks which block types have executed their own `CreateTerminalControls`
 in the current session, a prefix/finalizer on `MyTerminalControlFactory` entry
 points synchronizes concurrent `MyAPIGateway.TerminalControls` calls from
-parallel entity-loading threads with `m_createControlsLock` while the session is
-not ready yet (afterwards scripts call them every tick and they take no lock),
+parallel entity-loading threads with `m_createControlsLock` while a world loads,
 and a finalizer on
 `MySession.Unload` clears the initialized set even if a mod throws during
 world unload:
@@ -106,6 +105,22 @@ menu, loads the world again and counts again.
 | `fix` | 35 (vanilla ones and `ProbeButton`, each once) | 20 | 6 / 3 |
 
 The counts were the same on both loads of each run.
+
+`tests/early-mod-terminal-controls/mp.py` runs the same probe on a Magnetar
+2.4.3.9 server and on a headless client that joins it over DirectTransport,
+leaves to the main menu and joins again. Both sides touch the controls in
+`LoadData` before any block exists.
+
+| Variant | Server | Client, first join | Client, second join |
+|---|---|---|---|
+| `control`, no Bugfixes | 1 control, 0 actions | 1 control, 0 actions | 1 control, 0 actions |
+| `fix`, Bugfixes on both | 35 controls, 20 actions | 35 controls, 20 actions | 35 controls, 20 actions |
+
+In every `fix` run, offline and multiplayer, the game log shows the factory lock
+put on when the world starts loading and taken off once it is ready, once per
+load. The lock is a separate Harmony patch: it is put on in `MySession.OnLoading`
+and removed when the session is ready, so the script calls that reach the
+factory every tick after the load don't go through it.
 
 Earlier tests by the original author:
 
