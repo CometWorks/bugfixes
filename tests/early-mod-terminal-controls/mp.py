@@ -132,12 +132,24 @@ def scenario(slot: dict, variant: str) -> None:
         lambda: server.process.poll() is None,
     )
     client.start(server.port)
-    flames.until(
-        "the client's probe to finish",
-        lambda: "DONE" in flames.text(client_probe),
-        1800,
-        client.alive,
-    )
+    # The station streams to the client once it has a character near it: respawn and move the
+    # character there on each join.
+    placed = 0
+    deadline = time.monotonic() + 1800
+    while "DONE" not in flames.text(client_probe):
+        if not client.alive() or time.monotonic() > deadline:
+            raise RuntimeError("the client's probe did not finish")
+        joins = flames.text(client_probe).count("phase World")
+        if joins > placed:
+            try:
+                if client.character():
+                    client.api.character_teleport(0.0, 10.0, -20.0)
+                    placed = joins
+            except (
+                Exception
+            ):  # noqa: BLE001 -- the API is slow or down while a world loads
+                pass
+        time.sleep(2)
 
     server_log, client_log = flames.text(server_probe), flames.text(client_probe)
     for name, log in (("server", server_log), ("client", client_log)):
