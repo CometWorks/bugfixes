@@ -12,6 +12,7 @@ using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using SpaceEngineers.Game.Entities.Blocks;
 using SpaceEngineers.Game.ModAPI;
+using VRage.FileSystem;
 using VRage.Game;
 using VRage.Plugins;
 using VRage.Utils;
@@ -21,14 +22,18 @@ namespace EarlyControlsProbe;
 // Test plugin for tests/early-mod-terminal-controls/rig.py (SE-1934). Right after
 // MySession.LoadDataComponents, where mods run LoadData and before any block entity loads, it
 // reads the IMyTerminalBlock controls and the IMyTimerBlock actions and adds a ProbeButton control
-// to IMyTimerBlock, as many mods do. It loads EARLY_CONTROLS_PROBE_WORLD offline, reports the
-// timer's controls and actions once the world is ready, exits to the main menu, loads the world a
-// second time, reports again and exits the game. Every step goes to EARLY_CONTROLS_PROBE_LOG.
+// to IMyTimerBlock, as many mods do. Once a world is ready and a timer block is in it, it reports
+// the timer's controls and actions. Every step goes to EARLY_CONTROLS_PROBE_LOG, by default
+// early-controls-probe.log in the game's user data folder.
+//
+// Offline (EARLY_CONTROLS_PROBE_WORLD set): loads that world, reports, exits to the main menu,
+// loads it a second time, reports again and exits the game.
+// Multiplayer client (no world set): DirectTransport's --connect joins the server; the probe
+// reports, exits to the main menu, rejoins through DirectTransport, reports again and exits.
+// Dedicated server: reports once and keeps running.
 public class Plugin : IPlugin
 {
-    private static readonly string LogPath = Environment.GetEnvironmentVariable(
-        "EARLY_CONTROLS_PROBE_LOG"
-    );
+    private static string LogPath = Environment.GetEnvironmentVariable("EARLY_CONTROLS_PROBE_LOG");
     private static readonly string World = Environment.GetEnvironmentVariable(
         "EARLY_CONTROLS_PROBE_WORLD"
     );
@@ -47,9 +52,14 @@ public class Plugin : IPlugin
     private Phase phase = Phase.Menu;
     private double phaseStart;
     private int load;
+    private bool loadRequested;
 
     public void Init(object gameInstance)
     {
+        LogPath ??= Path.Combine(MyFileSystem.UserDataPath, "early-controls-probe.log");
+        Log(
+            $"mode={(Sandbox.Engine.Platform.Game.IsDedicated ? "server" : World == null ? "client" : "offline")}"
+        );
         Log($"loaded game={MyFinalBuildConstants.APP_VERSION_STRING}");
         new Harmony("early-controls-probe").Patch(
             AccessTools.Method(typeof(MySession), nameof(MySession.LoadDataComponents)),
@@ -65,10 +75,7 @@ public class Plugin : IPlugin
         var button = controls.CreateControl<IMyTerminalControlButton, IMyTimerBlock>("ProbeButton");
         button.Title = MyStringId.GetOrCompute("Probe");
         controls.AddControl<IMyTimerBlock>(button);
-        var timers = MyEntities
-            .GetEntities()
-            .OfType<MyCubeGrid>()
-            .Sum(g => g.GetFatBlocks<MyTimerBlock>().Count());
+        var timers = TimerCount();
         Log(
             $"early access in LoadData: base_controls={baseControls.Count} timer_actions={timerActions.Count} timers_in_world={timers}"
         );
@@ -80,38 +87,71 @@ public class Plugin : IPlugin
         switch (phase)
         {
             case Phase.Menu:
+                if (MySession.Static != null)
+                {
+                    load++;
+                    loadRequested = false;
+                    Enter(Phase.Loading, now);
+                    break;
+                }
                 if (
-                    !MySandboxGame.IsGameReady
-                    || MySession.Static != null
+                    Sandbox.Engine.Platform.Game.IsDedicated
+                    || !MySandboxGame.IsGameReady
                     || MyScreenManager.GetFirstScreenOfType<MyGuiScreenBase>() == null
                 )
                     break;
-                if (load == Loads || World == null)
+                if (load == Loads)
                 {
-                    Finish(World == null ? "no world" : "both loads reported");
+                    Finish("both loads reported");
                     break;
                 }
-                load++;
-                // The world has no binary save yet: load it from XML without asking
-                AccessTools
-                    .Property(typeof(MySandboxGame), nameof(MySandboxGame.SuppressLoadingDialogs))
-                    .SetValue(MySandboxGame.Static, true);
-                Enter(Phase.Loading, now);
-                MySessionLoader.LoadSingleplayerSession(
-                    World,
-                    onlineMode: MyOnlineModeEnum.OFFLINE
-                );
+                if (loadRequested)
+                {
+                    if (now - phaseStart > 300)
+                        Finish("TIMEOUT waiting for the load to start");
+                    break;
+                }
+                if (World != null)
+                {
+                    // The world has no binary save yet: load it from XML without asking
+                    AccessTools
+                        .Property(
+                            typeof(MySandboxGame),
+                            nameof(MySandboxGame.SuppressLoadingDialogs)
+                        )
+                        .SetValue(MySandboxGame.Static, true);
+                    MySessionLoader.LoadSingleplayerSession(
+                        World,
+                        onlineMode: MyOnlineModeEnum.OFFLINE
+                    );
+                }
+                else if (load > 0)
+                {
+                    // The first join comes from DirectTransport's --connect
+                    Log("rejoining through DirectTransport");
+                    RejoinThroughDirectTransport();
+                }
+                else
+                    break;
+                loadRequested = true;
+                phaseStart = now;
                 break;
             case Phase.Loading:
                 if (MySession.Static != null && MySession.Static.Ready)
                     Enter(Phase.World, now);
-                else if (now - phaseStart > 300)
+                else if (now - phaseStart > 600)
                     Finish("TIMEOUT loading the world");
                 break;
             case Phase.World:
-                if (now - phaseStart < 5)
+                // On a client the grids stream in after the session is ready
+                if (now - phaseStart < 5 || (TimerCount() == 0 && now - phaseStart < 120))
                     break;
                 Report();
+                if (Sandbox.Engine.Platform.Game.IsDedicated)
+                {
+                    phase = Phase.Done;
+                    break;
+                }
                 Enter(Phase.Unloading, now);
                 MySessionLoader.UnloadAndExitToMenu();
                 break;
@@ -123,6 +163,25 @@ public class Plugin : IPlugin
                 break;
         }
     }
+
+    private static void RejoinThroughDirectTransport()
+    {
+        var join = AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Select(a => a.GetType("ClientPlugin.DirectClient", false))
+            .FirstOrDefault(t => t?.GetMethod("JoinServer") != null)
+            ?.GetMethod("JoinServer");
+        if (join == null)
+            Log("DirectTransport's DirectClient.JoinServer not found");
+        else
+            join.Invoke(null, null);
+    }
+
+    private static int TimerCount() =>
+        MyEntities
+            .GetEntities()
+            .OfType<MyCubeGrid>()
+            .Sum(g => g.GetFatBlocks<MyTimerBlock>().Count());
 
     private void Report()
     {

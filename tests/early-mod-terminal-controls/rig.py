@@ -13,11 +13,13 @@ control runs without Bugfixes, off with this working copy of Bugfixes and
 EarlyModTerminalControlsPatch set to false in Bugfixes.cfg, fix with the fix on.
 
 Pass for fix: on both loads the timer has its vanilla controls (OnOff, Name, CustomData,
-OpenToolbar, TriggerNow) once each, ProbeButton once, and its actions. Pass for control and off:
+OpenToolbar, TriggerNow) once each, ProbeButton once, and its actions, and Bugfixes stopped locking
+the terminal control factory once each world was ready. Pass for control and off:
 the vanilla controls are missing, as in the bug report. Prints the probe's reports and a RESULT
 line, exits 0 on pass. Slot of RIG_TASK (default SE-1934), every process under run-test.sh (RAM
 guard). RIG_PULSAR names the Pulsar folder to copy (default ~/.config/Pulsar), RIG_CORE_PLUGINS
-colon-separated core plugin dev folders to use instead of the hub's.
+colon-separated core plugin dev folders to use instead of the hub's. mp.py runs the same test on a
+Magnetar server and a joining client.
 """
 
 from __future__ import annotations
@@ -299,14 +301,15 @@ def main() -> int:
         )
 
     complete = len(reports) == 2 and "DONE both loads reported" in probe
+    unlocked = game.count("stopped locking the terminal control factory")
     if variant == "fix":
-        passed = complete and early and all(fixed(r) for r in reports)
+        passed = complete and early and all(fixed(r) for r in reports) and unlocked == 2
     else:
         passed = complete and early and not any(fixed(r) for r in reports)
     exceptions = game.count("Exception")
     print(
         f"RESULT variant={variant} passed={passed} reports={len(reports)} early_before_blocks={early} "
-        f"fixed={[fixed(r) for r in reports]} exceptions_in_log={exceptions} "
+        f"fixed={[fixed(r) for r in reports]} factory_unlocked={unlocked} exceptions_in_log={exceptions} "
         f"seconds={time.monotonic() - started:.0f} logs={logs}"
     )
     return 0 if passed else 1

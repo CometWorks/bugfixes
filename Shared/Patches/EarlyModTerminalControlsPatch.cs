@@ -49,7 +49,7 @@ namespace Shared.Patches;
 // CreateTerminalControls, and then appends the stashed mod controls and actions after the
 // vanilla ones. Non-generic MyTerminalControlFactory entry points also synchronize on
 // m_createControlsLock when called from parallel entity-loading threads outside
-// BeforeGameLogicInit (such as MyGameLogicComponent.Init).
+// BeforeGameLogicInit (such as MyGameLogicComponent.Init), while a world loads.
 //
 // ReSharper disable once UnusedType.Global
 [HarmonyPatch(typeof(MyTerminalBlock), "BeforeGameLogicInit")]
@@ -121,6 +121,13 @@ public static class EarlyModTerminalControlsPatch
 
         createControlsLockDepth = 0;
         CreateControlsLock.ReleaseExclusive();
+    }
+
+    // Harmony calls Prepare before it patches this class, which happens only with the fix on.
+    private static bool Prepare()
+    {
+        FactoryLock.Subscribe();
+        return true;
     }
 
     private static IEnumerable<CodeInstruction> Transpiler(
@@ -404,13 +411,61 @@ public static class EarlyModTerminalControlsPatch
     // m_createControlsLock on non-generic MyTerminalControlFactory entry points when not already
     // held on the current thread.
     //
-    // Only while the session is not ready yet: that is when grids load in parallel and block types
-    // initialize for the first time. Afterwards scripts call these methods every tick (through
-    // GetActionWithName, GetProperty and ApplyAction), and the types they reach already exist in
-    // the world, so their controls were built during the load.
-    [HarmonyPatch]
-    private static class FactoryConcurrencyPatch
+    // Only while a world loads: that is when grids load in parallel and block types initialize
+    // for the first time. The patch goes on in MySession.OnLoading, raised from
+    // LoadDataComponents before any entity loads, and comes off when the session is ready.
+    // Afterwards scripts call these methods every tick (through GetActionWithName, GetProperty
+    // and ApplyAction), and the types they reach already exist in the world, so their controls
+    // were built during the load.
+    private static class FactoryLock
     {
+        private static readonly Harmony Harmony = new("Bugfixes.EarlyModTerminalControls.Factory");
+        private static bool subscribed;
+        private static bool patched;
+
+        public static void Subscribe()
+        {
+            if (subscribed)
+                return;
+
+            subscribed = true;
+            MySession.OnLoading += OnLoading;
+        }
+
+        private static void OnLoading()
+        {
+            Apply();
+            if (MySession.Static != null)
+                MySession.Static.OnReady += Remove;
+        }
+
+        private static void Apply()
+        {
+            if (patched)
+                return;
+
+            var prefix = new HarmonyMethod(typeof(FactoryLock), nameof(Prefix));
+            var finalizer = new HarmonyMethod(typeof(FactoryLock), nameof(Finalizer));
+            foreach (var method in TargetMethods())
+                Harmony.Patch(method, prefix: prefix, finalizer: finalizer);
+            patched = true;
+            Common.Logger.Info(
+                "EarlyModTerminalControlsPatch: locking the terminal control factory while the world loads"
+            );
+        }
+
+        private static void Remove()
+        {
+            if (!patched)
+                return;
+
+            Harmony.UnpatchAll(Harmony.Id);
+            patched = false;
+            Common.Logger.Info(
+                "EarlyModTerminalControlsPatch: world ready, stopped locking the terminal control factory"
+            );
+        }
+
         private static IEnumerable<MethodBase> TargetMethods()
         {
             var methods = typeof(MyTerminalControlFactory).GetMethods(
@@ -445,7 +500,7 @@ public static class EarlyModTerminalControlsPatch
         private static void Prefix(ref bool __state)
         {
             __state = false;
-            if (Common.Config?.Enabled != true || MySession.Static?.Ready == true)
+            if (Common.Config?.Enabled != true)
                 return;
 
             EnterCreateControlsLock(ref __state);
