@@ -95,6 +95,16 @@ public class PluginConfig : IPluginConfig
         set => SetValue(ref field, value);
     } = true;
 
+    [Category("HUD")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Detect ore on rotated asteroids")]
+    [Description("Show ore near the detector on rotated asteroids. Restart to apply changes.")]
+    public bool RotatedAsteroidOrePatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
     [Category("Audio")]
     [ConfigTarget(PluginTarget.Client)]
     [DisplayName("Voice chat follows the speaker")]

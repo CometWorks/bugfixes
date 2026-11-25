@@ -22,6 +22,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 
 ### Client only
 
+- [Ore markers missing on rotated asteroids](Docs/rotated-asteroid-ore.md)
 - [Absolute mod model paths in the vicinity asset preload, from servers and moved saves](Docs/vicinity-model-paths.md)
 - [HUD energy-time stat dereferencing a missing resource distributor](Docs/hud-energy-time-remaining.md)
 - [Laser antenna copy buttons writing GPS strings the paste button rejects](Docs/laser-antenna-copy-coords.md)
