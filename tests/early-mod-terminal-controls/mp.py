@@ -177,7 +177,7 @@ def scenario(slot: dict, variant: str) -> None:
     if fix:
         check("timer controls and actions complete everywhere", all(results), results)
         unlocked = (
-            flames.text(server.log).count(UNLOCKED),
+            flames.text(server.data / "SpaceEngineersDedicated.log").count(UNLOCKED),
             flames.text(client.appdata / "SpaceEngineers.log").count(UNLOCKED),
         )
         check(
@@ -209,6 +209,7 @@ def main() -> int:
         for log in (
             flames.ROOT / "ds0/server.log",
             flames.ROOT / f"ds0/data/{PROBE_LOG}",
+            flames.ROOT / "ds0/data/SpaceEngineersDedicated.log",
             flames.ROOT / "Joiner.log",
             flames.ROOT / "c0-data/SpaceEngineers.log",
             flames.ROOT / f"c0-data/{PROBE_LOG}",
