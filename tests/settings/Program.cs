@@ -9,7 +9,7 @@ var serializer = new XmlSerializer(typeof(PluginConfig));
 var properties = typeof(PluginConfig).GetProperties();
 var defaults = new PluginConfig();
 if (
-    properties.Length != 38
+    properties.Length != 39
     || properties.Any(p => p.PropertyType != typeof(bool) || !(bool)p.GetValue(defaults))
 )
     throw new Exception("Expected one enabled boolean per fix and the master switch.");
@@ -23,6 +23,7 @@ if (
     migrated.Enabled
     || migrated.WorldStorageInWorldFolder
     || migrated.IsolateMathStatics
+    || !migrated.CharacterGridPushPatch
     || !migrated.HavokBatchRemovalPatch
 )
     throw new Exception("Existing settings must survive, with new fixes enabled.");
@@ -50,4 +51,4 @@ var restored = (PluginConfig)serializer.Deserialize(savedXml);
 if (properties.Any(p => (bool)p.GetValue(restored)))
     throw new Exception("Disabled values did not survive XML round-trip.");
 
-Console.WriteLine("PASS: 38 boolean defaults, legacy config, change notifications, XML round-trip");
+Console.WriteLine("PASS: 39 boolean defaults, legacy config, change notifications, XML round-trip");

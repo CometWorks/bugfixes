@@ -170,7 +170,9 @@ def set_setting(text: str, name: str, value: str) -> str:
     )
 
 
-def prepare_world(world: Path) -> None:
+def prepare_world(world: Path, grid_xml: str | None = None) -> None:
+    if grid_xml is None:
+        grid_xml = station()
     if world.exists():
         shutil.rmtree(world)
     shutil.copytree(DEDICATED / "Content/CustomWorlds/Empty World", world)
@@ -185,12 +187,12 @@ def prepare_world(world: Path) -> None:
     sector = world / "SANDBOX_0_0_0_.sbs"
     text = sector.read_text(encoding="utf-8")
     new, count = re.subn(
-        r"<SectorObjects>", "<SectorObjects>" + station(), text, count=1
+        r"<SectorObjects>", "<SectorObjects>" + grid_xml, text, count=1
     )
     if not count:
         new, count = re.subn(
             r"<SectorObjects\s*/>",
-            f"<SectorObjects>{station()}</SectorObjects>",
+            f"<SectorObjects>{grid_xml}</SectorObjects>",
             text,
             count=1,
         )
@@ -287,7 +289,16 @@ def text(path: Path) -> str:
 
 
 class Server:
-    def __init__(self, slot: dict, ds64: Path, bugfixes: bool, admin: int):
+    def __init__(
+        self,
+        slot: dict,
+        ds64: Path,
+        bugfixes: bool,
+        admin: int,
+        *,
+        grid_xml: str | None = None,
+        extra_plugins: dict | None = None,
+    ):
         self.root = ROOT / "ds0"
         self.config, self.data = self.root / "magnetar", self.root / "data"
         self.log = self.root / "server.log"
@@ -307,13 +318,14 @@ class Server:
         }
         if bugfixes:
             plugins["bugfixes"] = (REPO, "BugfixesServer.xml")
+        plugins.update(extra_plugins or {})
         write_sources(self.config / "Sources/sources.xml", plugins)
         (self.config / "Profiles").mkdir()
         (self.config / "Profiles/Current.xml").write_text(
             profile_xml(plugins), encoding="utf-8"
         )
         world = self.data / "Saves/Se1480"
-        prepare_world(world)
+        prepare_world(world, grid_xml)
         (self.data / "SpaceEngineers-Dedicated.cfg").write_text(
             '<?xml version="1.0" encoding="utf-8"?>\n<MyConfigDedicated xmlns:xsi="http://www.w3.org/2001/'
             'XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
