@@ -150,6 +150,18 @@ public class PluginConfig : IPluginConfig
     } = true;
 
     [Category("Physics")]
+    [ConfigTarget(PluginTarget.Server)]
+    [DisplayName("Let characters push resting grids")]
+    [Description(
+        "Transfers the character's impact when a loose grid stays motionless after contact. Restart to apply changes."
+    )]
+    public bool CharacterGridPushPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    [Category("Physics")]
     [DisplayName("Guard detached Havok contact listeners")]
     [Description("Guard detached Havok contact listeners. Restart to apply changes.")]
     public bool HavokEndOfStepCallbackPatch

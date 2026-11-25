@@ -38,7 +38,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 
 ### Server only
 
-None yet.
+- [Suited characters unable to push a resting large grid in space](Docs/character-grid-push.md)
 
 ### Client + Server
 
