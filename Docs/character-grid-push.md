@@ -2,7 +2,7 @@
 
 On a dedicated server, an engineer can fly into a loose armor block and stop against its face while the block stays still. Hitting the grid with a ship first lets the engineer move it. A standalone server reproduced this with one large light armor block and a control panel. Havok woke the grid and reported the suit approaching at 16.4 m/s, but the 500 kg grid kept zero linear and angular velocity. Keeping the body awake before impact gave the same result.
 
-Bugfixes records the incoming velocity perpendicular to the face at contact. After Havok resolves the collision, the server checks whether the same body is still at rest. If it is, the patch applies a push at the contact point using the masses of the suit and the grid. The fix applies to dynamic large grids in zero natural gravity and skips rooted grids. The server setting **Let characters push resting grids** is enabled by default.
+Bugfixes records the incoming velocity perpendicular to the face at contact. After Havok resolves the collision, the server checks whether the same body is still at rest. If it is, the patch applies a push at the contact point using the masses of the suit and the grid. The fix applies to dynamic large grids in zero natural gravity and skips rooted grids. The server setting **Let characters push resting grids** (`CharacterGridPushPatch` in `Bugfixes.cfg`) is off by default, since it changes how parked ships react to characters; a server turns it on to use it.
 
 ## Regression test
 

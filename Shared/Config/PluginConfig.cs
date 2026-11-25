@@ -159,7 +159,7 @@ public class PluginConfig : IPluginConfig
     {
         get;
         set => SetValue(ref field, value);
-    } = true;
+    }
 
     [Category("Physics")]
     [DisplayName("Guard detached Havok contact listeners")]
