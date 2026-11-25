@@ -158,7 +158,10 @@ public static class EarlyModTerminalControlsPatch
         createControlsLockDepth++;
         try
         {
-            CreateTerminalControlsCore(block);
+            // The game holds m_createControlsLock exclusively here. The only other user of
+            // InitializedTypes is the unload finalizer, so one lock covers the whole check and build.
+            lock (InitializedTypes)
+                CreateTerminalControlsCore(block);
         }
         finally
         {
@@ -182,30 +185,21 @@ public static class EarlyModTerminalControlsPatch
         }
 
         var concreteType = block.GetType();
-        bool alreadyInitialized;
-        lock (InitializedTypes)
-        {
-            alreadyInitialized = InitializedTypes.Contains(concreteType);
-        }
-
-        if (alreadyInitialized)
+        if (InitializedTypes.Contains(concreteType))
         {
             CreateBlockTerminalControls(block);
             return;
         }
 
         var chain = new List<Type>(4);
-        lock (InitializedTypes)
+        for (
+            var t = concreteType;
+            t != null && typeof(MyTerminalBlock).IsAssignableFrom(t);
+            t = t.BaseType
+        )
         {
-            for (
-                var t = concreteType;
-                t != null && typeof(MyTerminalBlock).IsAssignableFrom(t);
-                t = t.BaseType
-            )
-            {
-                if (!InitializedTypes.Contains(t))
-                    chain.Add(t);
-            }
+            if (!InitializedTypes.Contains(t))
+                chain.Add(t);
         }
 
         // Always record the chain even when the plugin is disabled, so enabling it mid-session
@@ -218,11 +212,7 @@ public static class EarlyModTerminalControlsPatch
             }
             finally
             {
-                lock (InitializedTypes)
-                {
-                    foreach (var t in chain)
-                        InitializedTypes.Add(t);
-                }
+                InitializedTypes.UnionWith(chain);
             }
 
             return;
@@ -311,10 +301,7 @@ public static class EarlyModTerminalControlsPatch
         {
             foreach (var item in saved)
             {
-                lock (InitializedTypes)
-                {
-                    InitializedTypes.Add(item.BlockType);
-                }
+                InitializedTypes.Add(item.BlockType);
 
                 if (!item.HadEntry)
                     continue;
@@ -416,6 +403,11 @@ public static class EarlyModTerminalControlsPatch
     // thread is removing/rebuilding m_controls entries inside CreateTerminalControls. Acquire
     // m_createControlsLock on non-generic MyTerminalControlFactory entry points when not already
     // held on the current thread.
+    //
+    // Only while the session is not ready yet: that is when grids load in parallel and block types
+    // initialize for the first time. Afterwards scripts call these methods every tick (through
+    // GetActionWithName, GetProperty and ApplyAction), and the types they reach already exist in
+    // the world, so their controls were built during the load.
     [HarmonyPatch]
     private static class FactoryConcurrencyPatch
     {
@@ -453,7 +445,7 @@ public static class EarlyModTerminalControlsPatch
         private static void Prefix(ref bool __state)
         {
             __state = false;
-            if (Common.Config?.Enabled != true)
+            if (Common.Config?.Enabled != true || MySession.Static?.Ready == true)
                 return;
 
             EnterCreateControlsLock(ref __state);
@@ -471,9 +463,7 @@ public static class EarlyModTerminalControlsPatch
         private static void Finalizer()
         {
             lock (InitializedTypes)
-            {
                 InitializedTypes.Clear();
-            }
         }
     }
 }

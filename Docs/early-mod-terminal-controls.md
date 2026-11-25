@@ -2,6 +2,8 @@
 
 **Category:** Client + Server
 **Patch:** `Shared/Patches/EarlyModTerminalControlsPatch.cs`
+**Setting:** `EarlyModTerminalControlsPatch` in `Bugfixes.cfg`, under **Blocks and conveyors** in
+the client's settings dialog, on by default
 
 ## The bug
 
@@ -64,7 +66,9 @@ A transpiler on `MyTerminalBlock.BeforeGameLogicInit` routes its
 that tracks which block types have executed their own `CreateTerminalControls`
 in the current session, a prefix/finalizer on `MyTerminalControlFactory` entry
 points synchronizes concurrent `MyAPIGateway.TerminalControls` calls from
-parallel entity-loading threads with `m_createControlsLock`, and a finalizer on
+parallel entity-loading threads with `m_createControlsLock` while the session is
+not ready yet (afterwards scripts call them every tick and they take no lock),
+and a finalizer on
 `MySession.Unload` clears the initialized set even if a mod throws during
 world unload:
 
