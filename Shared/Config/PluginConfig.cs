@@ -238,6 +238,17 @@ public class PluginConfig : IPluginConfig
     } = true;
 
     [Category("Blocks and conveyors")]
+    [DisplayName("Keep vanilla terminal controls when mods add controls early")]
+    [Description(
+        "Keep vanilla terminal controls when mods add controls early. Restart to apply changes."
+    )]
+    public bool EarlyModTerminalControlsPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    [Category("Blocks and conveyors")]
     [DisplayName("Preserve thrust override when saving")]
     [Description("Preserve thrust override when saving. Restart to apply changes.")]
     public bool ThrustOverrideMultiplierPatch
