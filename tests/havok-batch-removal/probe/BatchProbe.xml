@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+
+    <Id>batch-probe</Id>
+    <GroupId>batch-probe</GroupId>
+    <RepoId>local/batch-probe</RepoId>
+
+    <FriendlyName>Batch Probe</FriendlyName>
+    <Author>CometWorks</Author>
+
+    <Tooltip>Test only: puts a rigid body that is not in the world into a Havok remove batch</Tooltip>
+    <Description>Test only, for tests/havok-batch-removal/rig.py of the Bugfixes plugin. A line "twice" or "removed" written
+        to batch-probe.txt in the game's user data folder makes the probe batch the removal of a grid's rigid body the
+        wrong way. It writes what it did to batch-probe-done.txt.
+    </Description>
+
+    <Runtimes>CoreCLR</Runtimes>
+
+    <Hidden>true</Hidden>
+
+    <Commit>TODO</Commit>
+
+</PluginData>

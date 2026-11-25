@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+
+    <Id>reattach-probe</Id>
+    <GroupId>reattach-probe</GroupId>
+    <RepoId>local/reattach-probe</RepoId>
+
+    <FriendlyName>Reattach Probe</FriendlyName>
+    <Author>CometWorks</Author>
+
+    <Tooltip>Test only: changes rotors' attach state from another thread while the game updates</Tooltip>
+    <Description>Test only, for tests/mechanical-reattach-thread/rig.py of the Bugfixes plugin. A line "stream SECONDS" or
+        "hammer SECONDS" written to reattach-probe.txt in the game's user data folder makes the probe spawn rotor grids
+        and mark their rotors for reattach from another thread. It writes what it saw to reattach-probe-done.txt.
+    </Description>
+
+    <Runtimes>CoreCLR</Runtimes>
+
+    <Hidden>true</Hidden>
+
+    <Commit>TODO</Commit>
+
+</PluginData>

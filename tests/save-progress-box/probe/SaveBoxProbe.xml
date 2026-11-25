@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+
+    <Id>savebox-probe</Id>
+    <GroupId>savebox-probe</GroupId>
+    <RepoId>local/savebox-probe</RepoId>
+
+    <FriendlyName>Save Box Probe</FriendlyName>
+    <Author>CometWorks</Author>
+
+    <Tooltip>Test only: closes the window while leaving a server</Tooltip>
+    <Description>Test only, for tests/save-progress-box/rig.py of the Bugfixes plugin. A file savebox-probe.txt in the
+        game's user data folder makes the probe exit to the main menu and raise the window close request during the
+        unload, which leaves the save progress box on the main menu. It writes what it saw to savebox-probe-done.txt.
+    </Description>
+
+    <Runtimes>CoreCLR</Runtimes>
+
+    <Hidden>true</Hidden>
+
+    <Commit>TODO</Commit>
+
+</PluginData>

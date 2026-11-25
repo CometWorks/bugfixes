@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Config\IPluginConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Config\ConfigTargetAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config\PersistentConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config\PluginConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging\IPluginLogger.cs" />
@@ -23,11 +24,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)Patches\DebrisEntityIdPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EarlyModTerminalControlsPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\EmptyStockpilePastePatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\EventControllerSelectedBlocksPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\HavokBatchRemovalPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\HavokEndOfStepCallbackPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LaserAntennaRepairWeldPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\LoadCameraEntityIdZeroPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\MergeBlockPhysicsPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\MechanicalReattachThreadPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\PistonAttachWithoutSubpartsPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\ConveyorTubeWithoutLinePatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ModFileHandlesPatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\ModWithoutDataFolderPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\PatchHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\PlacementTestShapeLeakPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\RadiationStatClosedCharacterPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\SoundBlockEmitterPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patches\ScriptCompilerNamePatch.cs" />

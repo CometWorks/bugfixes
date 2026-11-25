@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using ClientPlugin.Settings;
 using HarmonyLib;
 using Microsoft.CodeAnalysis.CSharp;
+using Sandbox.Graphics.GUI;
 using Shared.Config;
 using Shared.Logging;
 using Shared.Patches;
@@ -16,8 +18,8 @@ using VRage.Scripting;
 #if !LOCAL_BUILD
 using System.Reflection;
 
-[assembly: AssemblyVersion("1.15.0.0")]
-[assembly: AssemblyFileVersion("1.15.0.0")]
+[assembly: AssemblyVersion("1.25.0.0")]
+[assembly: AssemblyFileVersion("1.25.0.0")]
 
 #endif
 
@@ -34,38 +36,19 @@ public class Plugin : IPlugin, ICommonPlugin
     public IPluginLogger Log => Logger;
     private static readonly IPluginLogger Logger = new PluginLogger(Name);
 
-    public IPluginConfig Config => config?.Data;
+    public IPluginConfig Config { get; private set; }
     private PersistentConfig<PluginConfig> config;
-    private static readonly string ConfigFileName = $"{Name}.cfg";
 
     // Called by Pulsar for every script and mod compilation, before the game's own rewriters
     // and the whitelist check
     // ReSharper disable once UnusedMember.Global
     public static CSharpCompilation Rewrite(CSharpCompilation compilation, MyApiTarget target)
     {
-        var current = Common.Config ?? ConfigBeforeInit();
+        var current = Common.Config ?? StartupConfig.AtStartup;
         if (!current.Enabled || !current.IsolateMathStatics)
             return compilation;
 
         return MathStaticsRewriter.Rewrite(compilation, target, Logger);
-    }
-
-    // Scripts of the first world can be compiled before Init loads the config, on a dedicated
-    // server always. Read the file as it is then, or take the defaults.
-    private static IPluginConfig configBeforeInit;
-
-    private static IPluginConfig ConfigBeforeInit()
-    {
-        if (configBeforeInit != null)
-            return configBeforeInit;
-
-        PluginConfig file = null;
-        if (MyFileSystem.UserDataPath != null)
-            file = PersistentConfig<PluginConfig>.Peek(
-                Path.Combine(MyFileSystem.UserDataPath, ConfigFileName)
-            );
-
-        return configBeforeInit = file ?? new PluginConfig();
     }
 
     [System.Runtime.CompilerServices.MethodImpl(
@@ -82,19 +65,30 @@ public class Plugin : IPlugin, ICommonPlugin
 
         Log.Info("Loading");
 
-        var configPath = Path.Combine(MyFileSystem.UserDataPath, ConfigFileName);
+        var configPath = Path.Combine(MyFileSystem.UserDataPath, PluginConfig.FileName);
         config = PersistentConfig<PluginConfig>.Load(Log, configPath);
+
+        // Some fixes keep state across frames. Keep their settings fixed until restart.
+        var startupConfig = StartupConfig.AtStartup;
+        Config = startupConfig;
 
         var gameVersion = MyFinalBuildConstants.APP_VERSION_STRING.ToString();
         Common.SetPlugin(this, gameVersion, MyFileSystem.UserDataPath);
 
-        if (!PatchHelpers.HarmonyPatchAll(Log, new Harmony(Name)))
+        if (!PatchHelpers.HarmonyPatchAll(Log, new Harmony(Name), startupConfig))
         {
             failed = true;
             return;
         }
 
         Log.Debug("Successfully loaded");
+    }
+
+    // ReSharper disable once UnusedMember.Global
+    public void OpenConfigDialog()
+    {
+        if (config != null)
+            MyGuiSandbox.AddScreen(new SettingsScreen(config.Data));
     }
 
     public void Dispose()

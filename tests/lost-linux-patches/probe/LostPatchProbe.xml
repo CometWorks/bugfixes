@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+    <Id>lost-patch-probe</Id>
+    <RepoId>local/lost-patch-probe</RepoId>
+    <FriendlyName>Lost patch probe (SE-1587 test)</FriendlyName>
+    <Author>CometWorks</Author>
+    <Tooltip>Test only: drops LinuxCompat's Harmony patches to emulate lost detours, then loads a world</Tooltip>
+    <Hidden>true</Hidden>
+    <SourceDirectories>
+        <Directory>Source</Directory>
+    </SourceDirectories>
+</PluginData>

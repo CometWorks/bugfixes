@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+
+    <Id>voice-probe</Id>
+    <GroupId>voice-probe</GroupId>
+    <RepoId>local/voice-probe</RepoId>
+
+    <FriendlyName>Voice Probe</FriendlyName>
+    <Author>CometWorks</Author>
+
+    <Tooltip>Test only: plays voice chat audio from the local character and reports where it is heard</Tooltip>
+    <Description>Test only, for tests/voice-chat-position/rig.py of the Bugfixes plugin. A line "go" written to
+        voice-probe.txt in the game's user data folder makes the probe play voice chat audio from the local character
+        the way the game plays another player's voice, move the character, seat it, and write the distance the audio
+        engine uses next to the real one into voice-probe-done.txt.
+    </Description>
+
+    <Runtimes>CoreCLR</Runtimes>
+
+    <Hidden>true</Hidden>
+
+    <Commit>TODO</Commit>
+
+</PluginData>

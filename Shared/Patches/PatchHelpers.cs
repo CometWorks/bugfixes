@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using Shared.Config;
 using Shared.Logging;
 using Shared.Plugin;
 using Shared.Tools;
@@ -13,8 +14,11 @@ namespace Shared.Patches;
 // ReSharper disable once UnusedType.Global
 public static class PatchHelpers
 {
-    public static bool HarmonyPatchAll(IPluginLogger log, Harmony harmony)
+    public static bool HarmonyPatchAll(IPluginLogger log, Harmony harmony, PluginConfig config)
     {
+        if (!config.Enabled)
+            return true;
+
 #if DEBUG && LIST_ALL_TYPES
         log.Info("All types:");
         foreach (var typ in AccessTools.AllTypes())
@@ -44,7 +48,20 @@ public static class PatchHelpers
         log.Debug("Applying Harmony patches");
         try
         {
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            foreach (var type in AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly()))
+            {
+                if (!type.IsDefined(typeof(HarmonyPatch), false))
+                    continue;
+
+                var property = typeof(PluginConfig).GetProperty(GetFixId(type));
+                if (property == null || property.PropertyType != typeof(bool))
+                    throw new InvalidOperationException(
+                        $"Missing boolean setting for {type.FullName}"
+                    );
+
+                if ((bool)property.GetValue(config))
+                    harmony.CreateClassProcessor(type).Patch();
+            }
         }
         catch (Exception ex)
         {
@@ -53,6 +70,23 @@ public static class PatchHelpers
         }
 
         return true;
+    }
+
+    private static string GetFixId(Type patch)
+    {
+        // Nested patch classes belong to the same fix as their enclosing class.
+        while (patch.DeclaringType != null)
+            patch = patch.DeclaringType;
+
+        return patch.Name switch
+        {
+            "MyLocalCacheVicinityModelPathPatch" or "MySessionVicinityModelPathPatch" => nameof(
+                PluginConfig.VicinityModelPaths
+            ),
+            nameof(ScriptCompilerNamePatch) => nameof(PluginConfig.IsolateMathStatics),
+            nameof(WorldSavePathPatch) => nameof(PluginConfig.WorldStorageInWorldFolder),
+            _ => patch.Name,
+        };
     }
 
     // Called after loading configuration, but before patching

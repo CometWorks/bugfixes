@@ -16,8 +16,8 @@ using VRage.Scripting;
 #if !LOCAL_BUILD
 using System.Reflection;
 
-[assembly: AssemblyVersion("1.15.0.0")]
-[assembly: AssemblyFileVersion("1.15.0.0")]
+[assembly: AssemblyVersion("1.25.0.0")]
+[assembly: AssemblyFileVersion("1.25.0.0")]
 
 #endif
 
@@ -37,7 +37,6 @@ public class Plugin : IPlugin, ICommonPlugin
 
     public IPluginConfig Config => config?.Data;
     private PersistentConfig<PluginConfig> config;
-    private static readonly string ConfigFileName = $"{Name}.cfg";
 
     // Called by Magnetar for every script and mod compilation, before the game's own rewriters
     // and the whitelist check
@@ -60,13 +59,27 @@ public class Plugin : IPlugin, ICommonPlugin
         if (configBeforeInit != null)
             return configBeforeInit;
 
-        PluginConfig file = null;
-        if (MyFileSystem.UserDataPath != null)
-            file = PersistentConfig<PluginConfig>.Peek(
-                Path.Combine(MyFileSystem.UserDataPath, ConfigFileName)
-            );
+        var userDataPath = UserDataPathBeforeInit();
+        if (userDataPath == null)
+            return new PluginConfig();
 
+        var file = PersistentConfig<PluginConfig>.Peek(
+            Path.Combine(userDataPath, PluginConfig.FileName)
+        );
         return configBeforeInit = file ?? new PluginConfig();
+    }
+
+    // MyFileSystem is set up by MyInitializer.InvokeBeforeRun, and its getters throw before that.
+    // A compilation can come earlier than that, so take the folder from the server's -path
+    // argument then, the one InvokeBeforeRun is going to use.
+    private static string UserDataPathBeforeInit()
+    {
+        if (MyFileSystem.IsInitialized)
+            return MyFileSystem.UserDataPath;
+
+        var args = Environment.GetCommandLineArgs();
+        var i = Array.IndexOf(args, "-path");
+        return i >= 0 && i + 1 < args.Length ? args[i + 1].Trim('"') : null;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(
@@ -83,13 +96,13 @@ public class Plugin : IPlugin, ICommonPlugin
 
         Log.Info("Loading");
 
-        var configPath = Path.Combine(MyFileSystem.UserDataPath, ConfigFileName);
+        var configPath = Path.Combine(MyFileSystem.UserDataPath, PluginConfig.FileName);
         config = PersistentConfig<PluginConfig>.Load(Log, configPath);
 
         var gameVersion = MyFinalBuildConstants.APP_VERSION_STRING.ToString();
         Common.SetPlugin(this, gameVersion, MyFileSystem.UserDataPath);
 
-        if (!PatchHelpers.HarmonyPatchAll(Log, new Harmony(Name)))
+        if (!PatchHelpers.HarmonyPatchAll(Log, new Harmony(Name), config.Data))
         {
             failed = true;
             return;

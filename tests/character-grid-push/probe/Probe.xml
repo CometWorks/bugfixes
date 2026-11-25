@@ -1,0 +1,8 @@
+<PluginData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+  <Id>push-probe</Id>
+  <RepoId>local/push-probe</RepoId>
+  <FriendlyName>Character push test probe</FriendlyName>
+  <Runtimes>CoreCLR</Runtimes>
+  <Hidden>true</Hidden>
+  <Commit>TODO</Commit>
+</PluginData>
