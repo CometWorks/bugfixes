@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+    <Id>early-controls-probe</Id>
+    <RepoId>local/early-controls-probe</RepoId>
+    <FriendlyName>Early controls probe (SE-1934 test)</FriendlyName>
+    <Author>CometWorks</Author>
+    <Tooltip>Test only: touches terminal controls in LoadData like a mod, loads a world twice and counts the timer's controls</Tooltip>
+    <Hidden>true</Hidden>
+    <SourceDirectories>
+        <Directory>Source</Directory>
+    </SourceDirectories>
+</PluginData>
