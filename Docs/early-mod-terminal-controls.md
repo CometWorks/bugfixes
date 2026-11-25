@@ -91,6 +91,24 @@ world unload:
 
 ## Testing
 
+`tests/early-mod-terminal-controls/rig.py` runs an isolated headless client on
+Linux (game 1.211.018, Pulsar Interim) with a probe plugin. Right after
+`MySession.LoadDataComponents`, where mods run `LoadData` and before any block
+exists, the probe reads the `IMyTerminalBlock` controls and the `IMyTimerBlock`
+actions and adds a `ProbeButton` control to `IMyTimerBlock`. It loads a world
+with a timer block, counts the timer's controls and actions, exits to the main
+menu, loads the world again and counts again.
+
+| Variant | Timer controls | Timer actions | `IMyTerminalBlock` controls / actions |
+|---|---|---|---|
+| `control`, no Bugfixes | 1 (only `ProbeButton`) | 0 | 0 / 0 |
+| `off`, `EarlyModTerminalControlsPatch` false | 1 (only `ProbeButton`) | 0 | 0 / 0 |
+| `fix` | 35 (vanilla ones and `ProbeButton`, each once) | 20 | 6 / 3 |
+
+The counts were the same on both loads of each run.
+
+Earlier tests by the original author:
+
 On Windows (game 1.210.014, Pulsar 2.4.3 Legacy), with a test session component
 that calls `MyAPIGateway.TerminalControls.GetControls<IMyTerminalBlock>` and
 `GetControls<IMyTimerBlock>` in `LoadData` before any world entities load, and
