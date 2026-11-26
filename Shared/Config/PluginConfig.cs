@@ -305,6 +305,33 @@ public class PluginConfig : IPluginConfig
     } = true;
 
     [Category("Characters")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Keep prediction on when touching static grids")]
+    [Description(
+        "Stops the character lagging and snapping back after touching a station. Restart to apply changes."
+    )]
+    public bool CharacterContactPredictionPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    // 0 (the default): CharacterContactPredictionPatch keeps prediction on for static grids only.
+    // Above 0: also for loose grids slower than this many m/s at the character's position, which
+    // risks the character briefly ending up inside such a grid. Set in Bugfixes.cfg, not in the dialog.
+    [Category("Characters")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Rest speed of touched grids (m/s)")]
+    [Description(
+        "0: static grids only. Above 0: loose grids slower than this also count as at rest. Restart to apply changes."
+    )]
+    public float CharacterContactRestSpeed
+    {
+        get;
+        set => SetValue(ref field, value);
+    }
+
+    [Category("Characters")]
     [DisplayName("Guard missiles with a deleted pilot identity")]
     [Description("Guard missiles with a deleted pilot identity. Restart to apply changes.")]
     public bool CharacterMissileIdentityPatch

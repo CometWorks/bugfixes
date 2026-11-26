@@ -32,6 +32,7 @@ Each fix has its own page under [`Docs`](Docs) with the bug, the fix and how it 
 - [Jagged edges on block label text seen close up](Docs/text-atlas-edges.md)
 - [Seat interior drawn over the outside of a cockpit or cryo chamber after its grid is hidden and shown](Docs/cockpit-interior-visibility.md)
 - [Render thread crash in the LCD offscreen renderer when a render message is reused too early](Docs/offscreen-render-message-reuse.md)
+- [Character snaps back after touching a station in multiplayer](Docs/character-contact-prediction.md)
 - [Voice chat heard from where the speaker first spoke, not from where they are, for example sitting in a seat](Docs/voice-chat-position.md)
 - [Thruster flames left lit on a ship after its pilot, another player, lost control mid-burn](Docs/remote-pilot-flames.md)
 - [Crash when the "save your progress?" box, opened by closing the window while leaving a server, is answered on the main menu](Docs/save-progress-box-after-unload.md)
