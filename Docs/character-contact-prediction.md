@@ -1,7 +1,8 @@
 # Character snaps back after touching a station in multiplayer
 
 **Category:** Client only
-**Patch:** `ClientPlugin/Patches/CharacterContactPredictionPatch.cs`
+**Patches:** `ClientPlugin/Patches/CharacterContactPredictionPatch.cs`,
+`ClientPlugin/Patches/CharacterPredictionSmoothingPatch.cs`
 
 ## The bug
 
@@ -66,7 +67,77 @@ changing them.
   <CharacterContactRestSpeed>0</CharacterContactRestSpeed>
 ```
 
+## Smoother prediction switches
+
+`CharacterPredictionSmoothingPatch` covers the switch-offs the fix above keeps
+(loose grids, excessive corrections) and the delays where they pile up:
+
+- **Switch-off blend.** When prediction switches off, `MyAnimatedSnapshotSync`
+  shows the server's state from an interpolation buffer, a round trip and
+  64 ms behind where the client predicted the character, so it snaps back by
+  speed times that delay: 3.6 to 7.8 m at the median in the test below. The
+  patch offsets the first animated snapshot to where the character was shown
+  and shrinks the offset to zero over `CharacterPredictionBlendSeconds`
+  (0.5 s). Offsets under 10 cm or over 20 m are left to the game.
+- **Shorter hold.** Prediction comes back `CharacterPredictionHoldSeconds`
+  (2 s) after the last contact or excessive correction instead of 10 s, so the
+  controls react a round trip late for less time. 10 or more keeps the game's.
+- **RTT scaling.** The predicted sync spreads a server correction over 9
+  updates for the jetpack (`SMOOTH_ITERATIONS` times the setup's
+  `IterationsFactor`), and corrections grow with the round trip. That count and
+  the switch-off blend are scaled by `max(1, RTT / CharacterSmoothingRttMs)`
+  (100 ms), with the RTT the game measures (`MyReplicationClient.Ping`). 0
+  turns the scaling off.
+
+The jump when prediction comes back needs nothing: the predicted sync already
+smooths it, median 0 to 0.6 m in the test below with the game's behavior.
+
+On by default; `CharacterPredictionSmoothingPatch` set to `false` turns it off,
+also in the settings dialog under Characters. The three numbers are in
+`Bugfixes.cfg` only. The game's behavior is 10, 0 and 0.
+
+```xml
+  <CharacterPredictionSmoothingPatch>true</CharacterPredictionSmoothingPatch>
+  <CharacterPredictionHoldSeconds>2</CharacterPredictionHoldSeconds>
+  <CharacterPredictionBlendSeconds>0.5</CharacterPredictionBlendSeconds>
+  <CharacterSmoothingRttMs>100</CharacterSmoothingRttMs>
+```
+
 ## Testing
+
+### Prediction switches
+
+Same rig and setup, with `CharacterContactPredictionPatch` on in every run and
+`SNAP_RETURN=HOLD/BLEND/RTT_MS` setting the three numbers. 10-minute runs,
+2026-11-26. *Jump at switch-off* is the largest per-frame jump (the position
+against where its velocity said it would be) in the 0.5 s after prediction
+switched off, the rig's teleports left out. Viktor also flew it by hand against
+the local Magnetar with a 125/33 ms delay.
+
+| Delay (RTT/sigma) | Hold / blend / RTT unit | Prediction off | Key response p95 | Switch-offs | Jump at switch-off, median / p95 | Jump at return, median |
+|---|---|---|---|---|---|---|
+| Europe 50/20 ms | 10 / 0 / 0 (game) | 8.0% | 17 ms | 5 | 3.74 / 8.18 m | 0.00 m |
+| | 10 / 0.5 / 100 | 18.4% | 17 ms | 11 | 2.55 / 13.80 m | 0.00 m |
+| | 2 / 0.5 / 100 (default) | 3.6% | 17 ms | 11 | 0.99 / 3.15 m | 0.00 m |
+| US 100/30 ms | game | 24.0% | 33 ms | 15 | 3.62 / 11.19 m | 0.08 m |
+| | 10 / 0.5 / 100 | 25.0% | 17 ms | 15 | 0.99 / 5.51 m | 0.03 m |
+| | default | 4.9% | 17 ms | 15 | 1.02 / 2.87 m | 0.30 m |
+| China 250/50 ms | game | 54.9% | 383 ms | 34 | 7.23 / 16.75 m | 0.02 m |
+| | 10 / 0.5 / 100 | 42.9% | 350 ms | 26 | 0.90 / 8.33 m | 0.02 m |
+| | default | 21.6% | 17 ms | 60 | 0.94 / 6.47 m | 1.25 m |
+| Australia 300/50 ms | game | 59.7% | 467 ms | 35 | 7.75 / 16.46 m | 0.60 m |
+| | 10 / 0.5 / 100 | 44.9% | 17 ms | 28 | 0.98 / 1.53 m | 0.01 m |
+| | default | 21.4% | 17 ms | 64 | 0.99 / 1.48 m | 1.15 m |
+
+- The blend takes the median jump at switch-off from 3.6-7.8 m down to about
+  1 m at every delay.
+- The 2 s hold cuts the time without prediction 2-5 times and brings the key
+  response p95 down to 17 ms at every delay. At 250 ms and more, prediction
+  switches off about twice as often (excessive corrections come right back),
+  and the jump when it returns grows to about 1.2 m at the median.
+- No run had phasing longer than one frame (0.02 s).
+- With few switch-offs per run (5 to 15 at the shorter delays), single
+  outliers move the p95, as in the Europe blend-only run.
 
 ### Bumping into the Octahedron Large Station
 

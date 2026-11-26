@@ -332,6 +332,55 @@ public class PluginConfig : IPluginConfig
     }
 
     [Category("Characters")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Smooth the switches of character prediction")]
+    [Description(
+        "Stops your character jumping back when its prediction switches off, and turns it back on sooner. Restart to apply changes."
+    )]
+    public bool CharacterPredictionSmoothingPatch
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = true;
+
+    // Seconds after the last contact or excessive correction until CharacterPredictionSmoothingPatch
+    // turns prediction back on. 10 or more keeps the game's 10 s. Set in Bugfixes.cfg, not in the dialog.
+    [Category("Characters")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Prediction hold after contact (s)")]
+    [Description("10 or more: the game's 10 s. Restart to apply changes.")]
+    public float CharacterPredictionHoldSeconds
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = 2f;
+
+    // Seconds over which CharacterPredictionSmoothingPatch moves the character from where it was shown
+    // to the server's position when prediction switches off. 0 keeps the game's jump. Set in
+    // Bugfixes.cfg, not in the dialog.
+    [Category("Characters")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Prediction switch-off blend (s)")]
+    [Description("0: the game's jump. Restart to apply changes.")]
+    public float CharacterPredictionBlendSeconds
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = 0.5f;
+
+    // CharacterPredictionSmoothingPatch scales the smoothing of server corrections and the switch-off
+    // blend by max(1, RTT / this). 0: no scaling. Set in Bugfixes.cfg, not in the dialog.
+    [Category("Characters")]
+    [ConfigTarget(PluginTarget.Client)]
+    [DisplayName("Smoothing RTT unit (ms)")]
+    [Description("0: no scaling with the round trip time. Restart to apply changes.")]
+    public float CharacterSmoothingRttMs
+    {
+        get;
+        set => SetValue(ref field, value);
+    } = 100f;
+
+    [Category("Characters")]
     [DisplayName("Guard missiles with a deleted pilot identity")]
     [Description("Guard missiles with a deleted pilot identity. Restart to apply changes.")]
     public bool CharacterMissileIdentityPatch

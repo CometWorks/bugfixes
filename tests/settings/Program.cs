@@ -15,10 +15,13 @@ var defaults = new PluginConfig();
 // Off by default: characters pushing resting grids changes gameplay, servers opt in.
 string[] offByDefault = [nameof(PluginConfig.CharacterGridPushPatch)];
 if (
-    properties.Length != 42
+    properties.Length != 43
     || properties.Any(p => (bool)p.GetValue(defaults) == offByDefault.Contains(p.Name))
-    || typeof(PluginConfig).GetProperties().Length != 43
+    || typeof(PluginConfig).GetProperties().Length != 47
     || defaults.CharacterContactRestSpeed != 0f
+    || defaults.CharacterPredictionHoldSeconds != 2f
+    || defaults.CharacterPredictionBlendSeconds != 0.5f
+    || defaults.CharacterSmoothingRttMs != 100f
 )
     throw new Exception(
         "Expected one boolean per fix and the master switch, enabled unless off by default."
@@ -36,6 +39,8 @@ if (
     || migrated.CharacterGridPushPatch
     || !migrated.CharacterContactPredictionPatch
     || migrated.CharacterContactRestSpeed != 0f
+    || migrated.CharacterPredictionHoldSeconds != 2f
+    || migrated.CharacterPredictionBlendSeconds != 0.5f
     || !migrated.HavokBatchRemovalPatch
 )
     throw new Exception("Existing settings must survive, with new fixes at their defaults.");
@@ -48,6 +53,8 @@ defaults.PropertyChanged += (_, args) =>
     lastChanged = args.PropertyName;
 };
 defaults.CharacterContactRestSpeed = 2f;
+defaults.CharacterPredictionHoldSeconds = 10f;
+defaults.CharacterPredictionBlendSeconds = 0f;
 foreach (var property in properties)
 {
     var before = changes;
@@ -65,9 +72,11 @@ var restored = (PluginConfig)serializer.Deserialize(savedXml);
 if (
     properties.Any(p => (bool)p.GetValue(restored) != (bool)p.GetValue(defaults))
     || restored.CharacterContactRestSpeed != 2f
+    || restored.CharacterPredictionHoldSeconds != 10f
+    || restored.CharacterPredictionBlendSeconds != 0f
 )
     throw new Exception("Changed values did not survive XML round-trip.");
 
 Console.WriteLine(
-    "PASS: 42 boolean defaults, rest speed, legacy config, change notifications, XML round-trip"
+    "PASS: 43 boolean defaults, rest speed, prediction hold, blend and RTT unit, legacy config, change notifications, XML round-trip"
 );
